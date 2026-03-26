@@ -1,17 +1,8 @@
-import {OffersService} from '@/helpers/services/offers/offers-service';
+import {type AdminOffer, createOfferFactory} from '@/data-factory';
 import {PortalOfferPage, PublicPage} from '@/helpers/pages';
-import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {createPaidPortalTier, expect, redeemOfferViaPortal, test} from '@/helpers/playwright';
-import type {AdminOffer, OfferCreateInput} from '@/helpers/services/offers/offers-service';
-import type {HttpClient} from '@/data-factory';
-import type {StripeTestService} from '@/helpers/services/stripe';
+import {createPaidPortalTier, createPortalSignupOffer, expect, redeemOfferViaPortal, test} from '@/helpers/playwright';
 
 const MEMBER_NAME = 'Testy McTesterson';
-
-type SignupOfferInput = Pick<OfferCreateInput, 'amount' | 'duration' | 'duration_in_months' | 'type'> & {
-    codePrefix: string;
-    tierNamePrefix: string;
-};
 
 type OfferLandingExpectation = {
     title: string;
@@ -28,37 +19,6 @@ type DiscountOfferExpectation = {
     priceLabel: string;
     timingLabel: string;
 };
-
-// TODO: Move this setup into an OfferFactory-backed helper that owns portal-button
-// setup plus paid-tier creation instead of keeping it local to the test file.
-async function createSignupOffer(request: HttpClient, stripe: StripeTestService, input: SignupOfferInput): Promise<AdminOffer> {
-    const offersService = new OffersService(request);
-    const settingsService = new SettingsService(request);
-    const suffix = Date.now();
-    const tierName = `${input.tierNamePrefix} ${suffix}`;
-
-    await settingsService.updateSettings([{key: 'portal_button', value: true}]);
-
-    const tier = await createPaidPortalTier(request, {
-        name: tierName,
-        currency: 'usd',
-        monthly_price: 600,
-        yearly_price: 6000
-    }, {
-        stripe
-    });
-
-    return await offersService.createOffer({
-        name: 'Black Friday Special',
-        code: `${input.codePrefix}-${suffix}`,
-        cadence: 'month',
-        amount: input.amount,
-        duration: input.duration,
-        duration_in_months: input.duration_in_months ?? null,
-        tierId: tier.id,
-        type: input.type
-    });
-}
 
 async function expectOfferLandingPage(offerPage: PortalOfferPage, expected: OfferLandingExpectation): Promise<void> {
     await offerPage.waitForOfferPage();
@@ -102,8 +62,8 @@ test.describe('Ghost Public - Portal Offers', () => {
     test.use({stripeEnabled: true});
 
     test('archived offer link opens site - does not open portal offer flow', async ({page, stripe}) => {
+        const offerFactory = createOfferFactory(page.request);
         const publicPage = new PublicPage(page);
-        const offersService = new OffersService(page.request);
         const tier = await createPaidPortalTier(page.request, {
             name: `Archived Offer Tier ${Date.now()}`,
             currency: 'usd',
@@ -112,7 +72,7 @@ test.describe('Ghost Public - Portal Offers', () => {
         }, {
             stripe: stripe!
         });
-        const offer = await offersService.createOffer({
+        const offer = await offerFactory.create({
             name: 'Archived Offer',
             code: `archived-offer-${Date.now()}`,
             cadence: 'month',
@@ -122,7 +82,7 @@ test.describe('Ghost Public - Portal Offers', () => {
             tierId: tier.id
         });
 
-        await offersService.updateOffer(offer.id, {status: 'archived'});
+        await offerFactory.update(offer.id, {status: 'archived'});
 
         await publicPage.gotoOfferCode(offer.code);
         await publicPage.portalRoot.waitFor({state: 'attached'});
@@ -132,9 +92,9 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('retention offer link opens site - does not open portal offer flow', async ({page}) => {
+        const offerFactory = createOfferFactory(page.request);
         const publicPage = new PublicPage(page);
-        const offersService = new OffersService(page.request);
-        const offer = await offersService.createOffer({
+        const offer = await offerFactory.create({
             name: 'Retention Offer',
             code: `retention-offer-${Date.now()}`,
             cadence: 'month',
@@ -153,7 +113,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('free trial offer opens in portal - redemption shows free trial state', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 14,
             codePrefix: 'trial-offer',
             duration: 'trial',
@@ -176,7 +136,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('one-time discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 10,
             codePrefix: 'once-offer',
             duration: 'once',
@@ -204,7 +164,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('repeating discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 10,
             codePrefix: 'repeating-offer',
             duration: 'repeating',
@@ -234,7 +194,7 @@ test.describe('Ghost Public - Portal Offers', () => {
     });
 
     test('forever discount offer opens in portal - redemption shows discounted plan label', async ({page, stripe}) => {
-        const offer = await createSignupOffer(page.request, stripe!, {
+        const offer = await createPortalSignupOffer(page.request, stripe!, {
             amount: 10,
             codePrefix: 'forever-offer',
             duration: 'forever',

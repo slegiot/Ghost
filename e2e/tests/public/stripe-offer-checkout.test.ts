@@ -1,6 +1,5 @@
 import {MembersService} from '@/helpers/services/members/members-service';
-import {OffersService} from '@/helpers/services/offers/offers-service';
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
+import {createOfferFactory, createTierFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
 interface CheckoutSessionResponse {
@@ -16,20 +15,20 @@ test.describe('Ghost Public - Stripe Offer Checkout', () => {
     test.use({stripeEnabled: true});
 
     test('offer checkout creates a fake stripe coupon - redeemed offer is linked to the subscription', async ({page, stripe}) => {
-        const tiersService = new TiersService(page.request);
-        const offersService = new OffersService(page.request);
+        const offerFactory = createOfferFactory(page.request);
+        const tierFactory = createTierFactory(page.request);
         const membersService = new MembersService(page.request);
         const tierName = `Offer Tier ${Date.now()}`;
         const memberEmail = `offer-checkout-${Date.now()}@example.com`;
 
-        const tier = await tiersService.createTier({
+        const tier = await tierFactory.create({
             name: tierName,
             currency: 'usd',
             monthly_price: 600,
             yearly_price: 6000
         });
 
-        const offer = await offersService.createOffer({
+        const offer = await offerFactory.create({
             name: 'Spring Offer',
             code: `spring-offer-${Date.now()}`,
             cadence: 'month',
