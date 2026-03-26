@@ -5,9 +5,6 @@ node_modules
 
 **/*.log
 
-build
-dist
-
 coverage
 
 .eslintcache
@@ -17,12 +14,15 @@ test-results
 tsconfig.tsbuildinfo
 
 Dockerfile
+railway.Dockerfile
 .dockerignore
 
 .git
+.github
 .vscode
 .editorconfig
 compose.yml
+railway.toml
 
 docker
 !docker/**/*.entrypoint.sh
@@ -32,3 +32,15 @@ ghost/core/core/built/admin
 
 # Ignore local config files (.json and .jsonc)
 ghost/core/config.local.json*
+
+# E2E tests — not needed for deployment
+e2e
+
+# Test fixtures and snapshots
+**/test
+**/tests
+**/__snapshots__
+**/*.test.js
+**/*.test.ts
+**/*.spec.js
+**/*.spec.ts

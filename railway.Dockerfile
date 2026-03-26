@@ -1,29 +1,62 @@
-FROM node:22-bullseye-slim
+# ---- Stage 1: Build ----
+FROM node:22-bullseye-slim AS builder
 
 WORKDIR /app
 
-# Install system dependencies for native node modules (sharp, sqlite3, etc.)
+# Install system dependencies for native modules (sharp, sqlite3, etc.)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git ca-certificates python3 build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the entire Ghost monorepo (respects .dockerignore)
-COPY . .
+# Skip Husky git hooks
+ENV HUSKY=0
 
-# Install all dependencies (including workspace packages)
-RUN yarn install --frozen-lockfile --ignore-optional
+# Copy package manifests first for better layer caching
+# (yarn install only re-runs when these change, not on every code change)
+COPY package.json yarn.lock nx.json ./
+COPY ghost/core/package.json ghost/core/
+COPY ghost/admin/package.json ghost/admin/
+COPY ghost/i18n/package.json ghost/i18n/
+COPY ghost/parse-email-address/package.json ghost/parse-email-address/
+COPY apps/shade/package.json apps/shade/
+COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/
+COPY apps/admin-x-framework/package.json apps/admin-x-framework/
+COPY apps/admin-x-settings/package.json apps/admin-x-settings/
+COPY apps/admin/package.json apps/admin/
+COPY apps/portal/package.json apps/portal/
+COPY apps/comments-ui/package.json apps/comments-ui/
+COPY apps/signup-form/package.json apps/signup-form/
+COPY apps/sodo-search/package.json apps/sodo-search/
+COPY apps/announcement-bar/package.json apps/announcement-bar/
+COPY apps/posts/package.json apps/posts/
+COPY apps/stats/package.json apps/stats/
+COPY apps/activitypub/package.json apps/activitypub/
+
+# Install dependencies (cached unless package.json/yarn.lock change)
+RUN yarn install --frozen-lockfile --ignore-optional --network-timeout 600000
+
+# Now copy the rest of the source code
+COPY . .
 
 # Build all packages (admin, shade, framework, etc.) via Nx
 RUN yarn build
 
-# Clean up build tooling to reduce image size
-RUN apt-get purge -y python3 build-essential && \
-    apt-get autoremove -y && \
+# ---- Stage 2: Runtime ----
+FROM node:22-bullseye-slim
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
+# Copy the full built monorepo (yarn workspaces needs the structure)
+COPY --from=builder /app /app
+
 WORKDIR /app/ghost/core
 
-EXPOSE 8080
+# Railway sets PORT dynamically
+EXPOSE ${PORT:-2368}
 CMD ["node", "index.js"]

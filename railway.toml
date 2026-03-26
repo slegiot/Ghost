@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "./railway.Dockerfile"
+
+[deploy]
+healthcheckPath = "/ghost/api/admin/site/"
+restartPolicyType = "on_failure"
