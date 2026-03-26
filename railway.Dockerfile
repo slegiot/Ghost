@@ -32,13 +32,17 @@ COPY apps/posts/package.json apps/posts/
 COPY apps/stats/package.json apps/stats/
 COPY apps/activitypub/package.json apps/activitypub/
 
-# Install dependencies (cached unless package.json/yarn.lock change)
-RUN yarn install --frozen-lockfile --ignore-optional --network-timeout 600000
+# Install dependencies — skip native compilation to avoid hangs
+RUN yarn install --frozen-lockfile --ignore-optional --ignore-scripts --network-timeout 600000
+
+# Rebuild only the native modules Ghost actually needs
+RUN cd node_modules/sqlite3 && npm run install || true
 
 # Now copy the rest of the source code
 COPY . .
 
 # Build all packages (admin, shade, framework, etc.) via Nx
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN yarn build
 
 # ---- Stage 2: Runtime ----
