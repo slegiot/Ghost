@@ -1,7 +1,10 @@
 [build]
 builder = "dockerfile"
 dockerfilePath = "./railway.Dockerfile"
+watchPatterns = ["ghost/**", "apps/**", "package.json", "yarn.lock", "nx.json"]
 
 [deploy]
 healthcheckPath = "/ghost/api/admin/site/"
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

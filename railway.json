@@ -6,6 +6,8 @@
   },
   "deploy": {
     "healthcheckPath": "/ghost/api/admin/site/",
-    "restartPolicyType": "on_failure"
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "on_failure",
+    "restartPolicyMaxRetries": 3
   }
 }

@@ -3,7 +3,7 @@ FROM node:22-bullseye-slim AS builder
 
 WORKDIR /app
 
-# Install system dependencies for native modules (sharp, sqlite3, etc.)
+# Install system dependencies for native modules
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git ca-certificates python3 build-essential && \
     rm -rf /var/lib/apt/lists/*
@@ -12,12 +12,15 @@ RUN apt-get update && \
 ENV HUSKY=0
 
 # Copy package manifests first for better layer caching
-# (yarn install only re-runs when these change, not on every code change)
 COPY package.json yarn.lock nx.json ./
+
+# ghost/* packages
 COPY ghost/core/package.json ghost/core/
 COPY ghost/admin/package.json ghost/admin/
 COPY ghost/i18n/package.json ghost/i18n/
 COPY ghost/parse-email-address/package.json ghost/parse-email-address/
+
+# apps/* packages
 COPY apps/shade/package.json apps/shade/
 COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/
 COPY apps/admin-x-framework/package.json apps/admin-x-framework/
@@ -31,6 +34,7 @@ COPY apps/announcement-bar/package.json apps/announcement-bar/
 COPY apps/posts/package.json apps/posts/
 COPY apps/stats/package.json apps/stats/
 COPY apps/activitypub/package.json apps/activitypub/
+COPY apps/seo-copilot/package.json apps/seo-copilot/
 
 # Install dependencies — skip native compilation to avoid hangs
 RUN yarn install --frozen-lockfile --ignore-optional --ignore-scripts --network-timeout 600000
