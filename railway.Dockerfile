@@ -42,8 +42,11 @@ RUN cd node_modules/sqlite3 && npm run install || true
 COPY . .
 
 # Build all packages (admin, shade, framework, etc.) via Nx
+# - Limit parallelism to 1 to avoid OOM on constrained runners
+# - Verbose logging so build progress is visible
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN yarn build
+ENV NX_VERBOSE_LOGGING=true
+RUN npx nx run-many -t build --parallel=1 --verbose
 
 # ---- Stage 2: Runtime ----
 FROM node:22-bullseye-slim
