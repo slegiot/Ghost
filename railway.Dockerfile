@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install system dependencies for native node modules (sharp, sqlite3, etc.)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 build-essential && \
+    apt-get install -y --no-install-recommends git python3 build-essential && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the entire Ghost monorepo (respects .dockerignore)
