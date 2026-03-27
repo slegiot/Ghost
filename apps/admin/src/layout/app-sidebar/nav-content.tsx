@@ -226,7 +226,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
                     )}
 
-                    {currentUser && currentUser.role === 'Owner' || currentUser?.role === 'Administrator' ? (
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
                         <NavMenuItem>
                             <NavMenuItem.Link
                                 to="ai-agent"
