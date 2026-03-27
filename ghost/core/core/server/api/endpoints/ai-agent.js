@@ -1,6 +1,11 @@
 const aiAgentService = require('../../services/ai-agent');
 const executor = require('../../services/ai-agent/executor');
 
+const permissionsConfig = {
+    docName: 'posts',
+    method: 'browse'
+};
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'ai_agent',
@@ -10,7 +15,7 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        permissions: true,
+        permissions: permissionsConfig,
         async query(frame) {
             const service = aiAgentService.getService();
             return await service.chat({
@@ -25,7 +30,7 @@ const controller = {
         headers: {
             cacheInvalidate: true
         },
-        permissions: true,
+        permissions: permissionsConfig,
         async query(frame) {
             const results = await executor.executeAll(
                 frame.data.actions,
