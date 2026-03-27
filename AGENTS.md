@@ -23,6 +23,7 @@ Two categories of apps:
 **Admin Apps** (embedded in Ghost Admin):
 - `admin-x-settings`, `admin-x-activitypub` - Settings and integrations
 - `posts`, `stats` - Post analytics and site-wide analytics
+- `ai-agent` - AI-powered conversational content assistant
 - Built with Vite + React + `@tanstack/react-query`
 
 **Public Apps** (served to site visitors):
@@ -155,12 +156,32 @@ yarn dev:all                   # Include all optional services
 - Namespaces: `ghost`, `portal`, `signup-form`, `comments`, `search`
 - 60+ supported locales
 
+## AI Agent Integration
+
+The AI Agent is a full-stack integration for conversational CMS management.
+
+### Architecture
+- **Backend Service**: `ghost/core/core/server/services/ai-agent/`
+  - **Orchestrator**: Interfaces with OpenRouter (`xiaomi/mimo-v2-pro`).
+  - **Tools**: Defined in `tools.js`, mapping agent intent to Ghost internal actions.
+  - **Executor**: `executor.js` performs validated edits/creates via Ghost models (`models.Post`, etc.).
+- **Frontend App**: `apps/ai-agent/`
+  - Built with Shade UI components.
+  - Features nested `ActionCard` components for "human-in-the-loop" approval of mutations.
+- **Safety**: The agent returns `Action` objects which trigger confirmation UI. No destructive database writes happen without user approval.
+
+### Configuration
+Requires an OpenRouter API key:
+- **Environment**: `ai_agent__openrouter_api_key`
+- **Config**: `ai_agent: { openrouter_api_key: "..." }`
+- **Mock Mode**: If no key is provided, the service enters mock mode with canned responses.
+
 ### Build Dependencies (Nx)
 
 Critical build order (Nx handles automatically):
 1. `shade` + `admin-x-design-system` build
 2. `admin-x-framework` builds (depends on #1)
-3. Admin apps build (depend on #2)
+3. Admin apps build (including `@tryghost/ai-agent`) (depend on #2)
 4. `ghost/admin` builds (depends on #3, copies via asset-delivery)
 5. `ghost/core` serves admin build
 
@@ -173,7 +194,7 @@ Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS proc
 ### Entry Point
 
 `apps/admin/src/index.css` is the main CSS entry point. It contains:
-- `@source` directives that scan class usage in shade, posts, stats, activitypub, admin-x-settings, admin-x-design-system, and kg-unsplash-selector
+- `@source` directives that scan class usage in shade, posts, stats, activitypub, admin-x-settings, admin-x-design-system, ai-agent, and kg-unsplash-selector
 - `@import "@tryghost/shade/styles.css"` which loads the Shade design system styles
 
 ### Shade Styles
