@@ -40,4 +40,4 @@ EXPOSE 2368
 
 # Railway injects dynamic PORT env var — bridge it to Ghost's config format
 # Also force stdout-only logging for container environments
-CMD ["sh", "-c", "export server__port=${PORT:-2368} && export logging__transports='[\"stdout\"]' && exec node index.js"]
+CMD ["sh", "-c", "export server__host=0.0.0.0 && export server__port=${PORT:-2368} && export logging__transports='[\"stdout\"]' && exec node index.js"]
