@@ -20,12 +20,12 @@ WORKDIR /home/ghost
 # Copy the pre-built ghost core (from extracted yarn archive tarball)
 COPY . .
 
-# Install production dependencies only (matching official Dockerfile.production flags)
-RUN yarn install --production --frozen-lockfile --ignore-scripts --prefer-offline --network-timeout 600000 || \
-    yarn install --production --ignore-scripts --network-timeout 600000 || true
+# Install production dependencies (npm handles transitive deps without a lockfile)
+# The archive has bundled workspace tarballs but no yarn.lock, so npm works better here
+RUN npm install --production --no-optional=false 2>&1 || npm install --production 2>&1
 
 # Rebuild native modules for this platform
-RUN cd node_modules/sqlite3 && npm run install || true
+RUN npm rebuild sqlite3 || true
 
 # Clean up build tools
 RUN apt-get purge -y build-essential && \
