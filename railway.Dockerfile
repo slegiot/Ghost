@@ -22,7 +22,7 @@ COPY . .
 
 # Install production dependencies (npm handles transitive deps without a lockfile)
 # The archive has bundled workspace tarballs but no yarn.lock, so npm works better here
-RUN npm install --production --no-optional=false 2>&1 || npm install --production 2>&1
+RUN npm install --production --ignore-scripts
 
 # Rebuild native modules for this platform
 RUN npm rebuild sqlite3 || true
