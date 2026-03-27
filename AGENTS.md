@@ -268,3 +268,21 @@ yarn nx reset                  # Reset Nx cache
 ### Test Issues
 - **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
 - **Docker issues:** `yarn docker:clean && yarn docker:build`
+
+## Deployment to Railway (Production)
+
+This repository is configured for automated deployment to Railway via GitHub Actions, bypassing Railway's native Nixpacks builder due to monorepo memory constraints.
+
+### The CI/CD Pipeline
+1. **GitHub Actions (`build-and-push.yml`)**: 
+   - Runs `yarn archive` to invoke `ghost/core/monobundle.js`.
+   - This creates a self-contained `.tgz` tarball of the backend and frontend assets, rewriting `package.json` to link local workspace dependencies to bundled tarballs.
+   - Extracts the tarball and builds a minimal Docker image using `railway.Dockerfile`.
+   - Pushes the image to GitHub Container Registry (GHCR).
+2. **Railway Integration**:
+   - Railway is configured to deploy directly from the GHCR image registry, not the source code.
+
+### Troubleshooting Deployment Issues
+- **Port Binding (502 Bad Gateway):** Ghost expects the port to be defined in config, but Railway injects a dynamic `PORT` env var. `railway.Dockerfile` handles this by mapping `server__port=${PORT:-2368}` at runtime. Do NOT set `server__port` manually in Railway variables.
+- **Dependency Issues (`yarn install` failures):** The production image uses `npm install --production` because the `yarn archive` tarball does not include a `yarn.lock`. `npm` correctly resolves transitive dependencies (like `cron-validate` for `bree`) without needing a lockfile.
+- **Node OOM Errors during build:** Never try to run `yarn nx run-many -t build` inside a constrained Docker container (like Railway's builder). Always use the pre-built artifacts strategy (`yarn archive`).
