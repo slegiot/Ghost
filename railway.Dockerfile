@@ -38,4 +38,6 @@ RUN mkdir -p content/data content/logs content/themes content/images && \
 
 EXPOSE 2368
 
-CMD ["node", "index.js"]
+# Railway injects dynamic PORT env var — bridge it to Ghost's config format
+# Also force stdout-only logging for container environments
+CMD ["sh", "-c", "export server__port=${PORT:-2368} && export logging__transports='[\"stdout\"]' && exec node index.js"]
