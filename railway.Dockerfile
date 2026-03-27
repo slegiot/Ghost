@@ -20,9 +20,9 @@ WORKDIR /home/ghost
 # Copy the pre-built ghost core (from extracted yarn archive tarball)
 COPY . .
 
-# Install production dependencies only
-RUN yarn install --production --frozen-lockfile --ignore-optional --ignore-scripts --network-timeout 600000 || \
-    yarn install --production --ignore-optional --ignore-scripts --network-timeout 600000 || true
+# Install production dependencies only (matching official Dockerfile.production flags)
+RUN yarn install --production --frozen-lockfile --ignore-scripts --prefer-offline --network-timeout 600000 || \
+    yarn install --production --ignore-scripts --network-timeout 600000 || true
 
 # Rebuild native modules for this platform
 RUN cd node_modules/sqlite3 && npm run install || true
