@@ -191,7 +191,8 @@
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
               "@tryghost/posts",
-              "@tryghost/stats"
+              "@tryghost/stats",
+              "@tryghost/ai-agent"
             ],
             "target": "build"
           }
@@ -210,7 +211,8 @@
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
               "@tryghost/posts",
-              "@tryghost/stats"
+              "@tryghost/stats",
+              "@tryghost/ai-agent"
             ],
             "target": "build"
           }

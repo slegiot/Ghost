@@ -63,6 +63,8 @@ Router.map(function () {
         this.route('activitypub-x', {path: '/*sub'});
     });
 
+    this.route('ai-agent');
+
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
         this.route('connect');

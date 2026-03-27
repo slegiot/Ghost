@@ -225,6 +225,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
+
+                    {currentUser && currentUser.role === 'Owner' || currentUser?.role === 'Administrator' ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="ai-agent"
+                                isActive={routing.isRouteActive('ai-agent')}
+                            >
+                                <LucideIcon.BotMessageSquare />
+                                <NavMenuItem.Label>AI Agent</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

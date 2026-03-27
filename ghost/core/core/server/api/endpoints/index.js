@@ -237,6 +237,10 @@ module.exports = {
         return apiFramework.pipeline(require('./search-index'), localUtils);
     },
 
+    get aiAgent() {
+        return apiFramework.pipeline(require('./ai-agent'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *

@@ -408,5 +408,9 @@ module.exports = function apiRoutes() {
     router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
     router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
 
+    // ## AI Agent
+    router.post('/ai-agent/chat', mw.authAdminApi, http(api.aiAgent.chat));
+    router.post('/ai-agent/execute', mw.authAdminApi, http(api.aiAgent.execute));
+
     return router;
 };

@@ -2,6 +2,7 @@
 @source "../../posts/src/**/*.{ts,tsx}";
 @source "../../stats/src/**/*.{ts,tsx}";
 @source "../../activitypub/src/**/*.{ts,tsx}";
+@source "../../ai-agent/src/**/*.{ts,tsx}";
 @source "../../admin-x-settings/src/**/*.{ts,tsx}";
 @source "../../admin-x-design-system/src/**/*.{ts,tsx}";
 @source "../../../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
