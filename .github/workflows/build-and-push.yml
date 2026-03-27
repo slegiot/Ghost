@@ -35,10 +35,15 @@ jobs:
 
       - name: Extract archive for Docker
         run: |
+          echo "--- Finding archive ---"
+          find . -name "ghost-*.tgz" -type f
+          ARCHIVE=$(find . -name "ghost-*.tgz" -type f | head -1)
+          echo "Using archive: $ARCHIVE"
           mkdir -p docker-context
-          tar xzf ghost-*.tgz -C docker-context --strip-components=1
+          tar xzf "$ARCHIVE" -C docker-context --strip-components=1
+          echo "--- Contents ---"
           ls -la docker-context/
-          echo "--- core/built/admin check ---"
+          echo "--- Admin build check ---"
           ls docker-context/core/built/admin/ 2>/dev/null | head -10 || echo "No admin build found"
 
       - name: Log in to Docker Hub
