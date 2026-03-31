@@ -192,7 +192,14 @@
               "@tryghost/activitypub",
               "@tryghost/posts",
               "@tryghost/stats",
-              "@tryghost/ai-agent"
+              "@tryghost/ai-agent",
+              "@tryghost/semantic-linker",
+              "@tryghost/auto-tagger",
+              "@tryghost/editor-ai",
+              "@tryghost/content-gap",
+              "@tryghost/audio-post",
+              "@tryghost/style-guard",
+              "@tryghost/content-repurpose"
             ],
             "target": "build"
           }
@@ -212,7 +219,14 @@
               "@tryghost/activitypub",
               "@tryghost/posts",
               "@tryghost/stats",
-              "@tryghost/ai-agent"
+              "@tryghost/ai-agent",
+              "@tryghost/semantic-linker",
+              "@tryghost/auto-tagger",
+              "@tryghost/editor-ai",
+              "@tryghost/content-gap",
+              "@tryghost/audio-post",
+              "@tryghost/style-guard",
+              "@tryghost/content-repurpose"
             ],
             "target": "build"
           }
