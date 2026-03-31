@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button} from '@tryghost/shade';
+import {cn} from '@tryghost/shade';
 
 interface QuickActionsProps {
     onAction: (prompt: string) => void;
@@ -16,17 +16,22 @@ const QUICK_ACTIONS = [
 
 const QuickActions: React.FC<QuickActionsProps> = ({onAction}) => {
     return (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2.5">
             {QUICK_ACTIONS.map(action => (
-                <Button
+                <button
                     key={action.label}
-                    className="text-sm"
-                    size="sm"
-                    variant="outline"
+                    className={cn(
+                        'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-300',
+                        'border border-border/50 bg-white/60 dark:bg-zinc-900/60 shadow-sm backdrop-blur-sm',
+                        'hover:-translate-y-0.5 hover:border-indigo-500/30 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-md hover:shadow-indigo-500/10',
+                        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+                        'h-9 px-4 py-2'
+                    )}
+                    type="button"
                     onClick={() => onAction(action.prompt)}
                 >
                     {action.label}
-                </Button>
+                </button>
             ))}
         </div>
     );

@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button, cn} from '@tryghost/shade';
 
 interface ChatInputProps {
@@ -34,15 +34,15 @@ const ChatInput: React.FC<ChatInputProps> = ({onSend, isLoading}) => {
     };
 
     return (
-        <div className="border-t border-border px-6 py-4">
+        <div className="bg-gradient-to-t from-background via-background/95 to-transparent px-6 pt-10 pb-6">
             <div className={cn(
-                'flex items-end gap-2 rounded-xl border border-border bg-background px-4 py-3',
-                'focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20',
-                'transition-all duration-200'
+                'relative mx-auto flex w-full max-w-4xl items-end gap-3 rounded-2xl border border-border/60 bg-white/70 px-4 py-3 pb-3 pt-4 shadow-sm backdrop-blur-xl dark:bg-zinc-900/70',
+                'focus-within:border-indigo-500/40 focus-within:bg-white focus-within:shadow-[0_8px_30px_rgba(99,102,241,0.1)] focus-within:ring-1 focus-within:ring-indigo-500/20 dark:focus-within:bg-zinc-900',
+                'transition-all duration-300 ease-out'
             )}>
                 <textarea
                     ref={textareaRef}
-                    className="max-h-[160px] min-h-[24px] flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="max-h-[160px] min-h-[24px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
                     disabled={isLoading}
                     placeholder="Ask the AI agent to create, tag, optimise or analyse content..."
                     rows={1}
@@ -51,7 +51,12 @@ const ChatInput: React.FC<ChatInputProps> = ({onSend, isLoading}) => {
                     onKeyDown={handleKeyDown}
                 />
                 <Button
-                    className="shrink-0"
+                    className={cn(
+                        'shrink-0 rounded-xl transition-all duration-300',
+                        text.trim() && !isLoading 
+                            ? 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-500/20 text-white' 
+                            : 'bg-muted text-muted-foreground'
+                    )}
                     disabled={!text.trim() || isLoading}
                     size="sm"
                     onClick={handleSubmit}

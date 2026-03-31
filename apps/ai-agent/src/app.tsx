@@ -1,7 +1,7 @@
+import AiAgentView from '@components/AiAgentView';
 import React from 'react';
 import {BaseAppProps, FrameworkProvider} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade';
-import AiAgentView from '@components/AiAgentView';
 
 const App: React.FC<BaseAppProps> = ({framework, designSystem}) => {
     return (

@@ -21,19 +21,19 @@ const TOOL_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-    pending: 'border-yellow-500/30 bg-yellow-500/5',
-    approved: 'border-blue-500/30 bg-blue-500/5',
-    executed: 'border-green-500/30 bg-green-500/5',
-    rejected: 'border-muted-foreground/20 bg-muted/50 opacity-60',
-    failed: 'border-red-500/30 bg-red-500/5'
+    pending: 'border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-transparent',
+    approved: 'border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-transparent',
+    executed: 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent',
+    rejected: 'border-muted-foreground/20 bg-muted/30 opacity-70 grayscale-[0.5]',
+    failed: 'border-rose-500/30 bg-gradient-to-br from-rose-500/10 to-transparent'
 };
 
 const STATUS_BADGES: Record<string, {label: string; className: string}> = {
-    pending: {label: 'Awaiting approval', className: 'bg-yellow-500/10 text-yellow-600'},
-    approved: {label: 'Executing...', className: 'bg-blue-500/10 text-blue-600'},
-    executed: {label: 'Done', className: 'bg-green-500/10 text-green-600'},
-    rejected: {label: 'Rejected', className: 'bg-muted text-muted-foreground'},
-    failed: {label: 'Failed', className: 'bg-red-500/10 text-red-600'}
+    pending: {label: 'Awaiting approval', className: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 ring-1 ring-inset ring-yellow-500/20'},
+    approved: {label: 'Executing...', className: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/20'},
+    executed: {label: 'Done', className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-500/20'},
+    rejected: {label: 'Rejected', className: 'bg-muted text-muted-foreground ring-1 ring-inset ring-muted-foreground/20'},
+    failed: {label: 'Failed', className: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 ring-1 ring-inset ring-rose-500/20'}
 };
 
 const ActionCard: React.FC<ActionCardProps> = ({action, onApprove, onReject}) => {
@@ -41,10 +41,13 @@ const ActionCard: React.FC<ActionCardProps> = ({action, onApprove, onReject}) =>
 
     return (
         <div className={cn(
-            'rounded-lg border p-3 transition-all duration-200',
+            'group relative overflow-hidden rounded-2xl border p-4 shadow-sm transition-all duration-300 hover:shadow-md',
             STATUS_STYLES[action.status]
         )}>
-            <div className="flex items-center justify-between">
+            {/* Subtle glow effect behind card */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/40 to-transparent mix-blend-overlay"></div>
+            
+            <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-foreground">
                         {TOOL_LABELS[action.tool] || action.tool}
@@ -54,11 +57,20 @@ const ActionCard: React.FC<ActionCardProps> = ({action, onApprove, onReject}) =>
                     </span>
                 </div>
                 {action.status === 'pending' && (
-                    <div className="flex items-center gap-1.5">
-                        <Button size="sm" variant="outline" onClick={onReject}>
+                    <div className="flex items-center gap-2">
+                        <Button 
+                            className="bg-white/50 hover:bg-white dark:bg-zinc-800/50 dark:hover:bg-zinc-800" 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={onReject}
+                        >
                             Reject
                         </Button>
-                        <Button size="sm" onClick={onApprove}>
+                        <Button
+                            className="border-0 bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-500/20" 
+                            size="sm" 
+                            onClick={onApprove}
+                        >
                             Approve
                         </Button>
                     </div>
