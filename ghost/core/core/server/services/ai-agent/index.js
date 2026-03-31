@@ -5,7 +5,6 @@ let aiAgentServiceInstance;
 module.exports = {
     async init() {
         const AiAgentService = require('./ai-agent-service');
-const errors = require('@tryghost/errors');
         const config = require('../../../shared/config');
 
         const apiKey = config.get('ai_agent:openrouter_api_key') || process.env.OPENROUTER_API_KEY;
@@ -21,7 +20,8 @@ const errors = require('@tryghost/errors');
 
     getService() {
         if (!aiAgentServiceInstance) {
-            throw new Error('AI Agent service has not been initialised');
+            const errors = require('@tryghost/errors');
+            throw new errors.InternalServerError({message: 'AI Agent service has not been initialised'});
         }
         return aiAgentServiceInstance;
     }

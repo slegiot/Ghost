@@ -3,6 +3,13 @@
 @source "../../stats/src/**/*.{ts,tsx}";
 @source "../../activitypub/src/**/*.{ts,tsx}";
 @source "../../ai-agent/src/**/*.{ts,tsx}";
+@source "../../semantic-linker/src/**/*.{ts,tsx}";
+@source "../../auto-tagger/src/**/*.{ts,tsx}";
+@source "../../content-gap/src/**/*.{ts,tsx}";
+@source "../../audio-post/src/**/*.{ts,tsx}";
+@source "../../style-guard/src/**/*.{ts,tsx}";
+@source "../../content-repurpose/src/**/*.{ts,tsx}";
+@source "../../editor-ai/src/**/*.{ts,tsx}";
 @source "../../admin-x-settings/src/**/*.{ts,tsx}";
 @source "../../admin-x-design-system/src/**/*.{ts,tsx}";
 @source "../../../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";

@@ -320,6 +320,35 @@ class ActionExecutor {
         };
     }
 
+    async semantic_link_suggestion(args, options) {
+        const semanticLinker = require('../services/semantic-linker');
+        const service = semanticLinker.getService();
+
+        return await service.getLinkSuggestions(
+            args.post_id,
+            null,
+            options
+        );
+    }
+
+    async predictive_taxonomy(args, options) {
+        const taxonomySuggester = require('../services/taxonomy-suggester');
+        const service = taxonomySuggester.getService();
+
+        const result = await service.suggestTags(args.post_id, options);
+
+        if (args.apply_suggestions && result.suggestions.length > 0) {
+            const applied = await service.autoApplyTags(
+                args.post_id,
+                result.suggestions,
+                options
+            );
+            return {...result, applied};
+        }
+
+        return result;
+    }
+
     // --- Helpers ---
 
     _getDateFrom(period) {

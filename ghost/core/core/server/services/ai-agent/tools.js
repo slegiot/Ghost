@@ -223,6 +223,48 @@ const tools = [
                 }
             }
         }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'semantic_link_suggestion',
+            description: 'Analyzes a post and finds semantically related content for internal linking suggestions using NER and vector similarity.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    post_id: {
+                        type: 'string',
+                        description: 'The ID of the post to find internal link suggestions for'
+                    },
+                    max_suggestions: {
+                        type: 'number',
+                        description: 'Maximum number of link suggestions to return. Default 5.'
+                    }
+                },
+                required: ['post_id']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'predictive_taxonomy',
+            description: 'Analyzes post content and suggests tags based on NLP topic extraction, matching against existing tags and identifying content complexity for categorization.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    post_id: {
+                        type: 'string',
+                        description: 'The ID of the post to analyze for tag suggestions'
+                    },
+                    apply_suggestions: {
+                        type: 'boolean',
+                        description: 'Whether to automatically apply the suggested tags. Default false.'
+                    }
+                },
+                required: ['post_id']
+            }
+        }
     }
 ];
 

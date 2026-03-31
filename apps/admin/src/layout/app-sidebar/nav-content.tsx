@@ -237,6 +237,90 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="semantic-linker"
+                                isActive={routing.isRouteActive('semantic-linker')}
+                            >
+                                <LucideIcon.Link />
+                                <NavMenuItem.Label>Semantic Linker</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="auto-tagger"
+                                isActive={routing.isRouteActive('auto-tagger')}
+                            >
+                                <LucideIcon.Tags />
+                                <NavMenuItem.Label>Auto Tagger</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="content-gap"
+                                isActive={routing.isRouteActive('content-gap')}
+                            >
+                                <LucideIcon.Radar />
+                                <NavMenuItem.Label>Content Gaps</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="audio-post"
+                                isActive={routing.isRouteActive('audio-post')}
+                            >
+                                <LucideIcon.Mic />
+                                <NavMenuItem.Label>Audio Posts</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="style-guard"
+                                isActive={routing.isRouteActive('style-guard')}
+                            >
+                                <LucideIcon.Shield />
+                                <NavMenuItem.Label>Style Guard</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="content-repurpose"
+                                isActive={routing.isRouteActive('content-repurpose')}
+                            >
+                                <LucideIcon.Copy />
+                                <NavMenuItem.Label>Repurpose</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
+
+                    {currentUser && (currentUser.roles?.some(role => role.name === 'Owner') || currentUser.roles?.some(role => role.name === 'Administrator')) ? (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="editor-ai"
+                                isActive={routing.isRouteActive('editor-ai')}
+                            >
+                                <LucideIcon.Sparkles />
+                                <NavMenuItem.Label>Editor AI</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    ) : null}
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

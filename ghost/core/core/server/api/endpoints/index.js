@@ -241,6 +241,34 @@ module.exports = {
         return apiFramework.pipeline(require('./ai-agent'), localUtils);
     },
 
+    get semanticLinker() {
+        return apiFramework.pipeline(require('./semantic-linker'), localUtils);
+    },
+
+    get taxonomySuggester() {
+        return apiFramework.pipeline(require('./taxonomy-suggester'), localUtils);
+    },
+
+    get editorAiTools() {
+        return apiFramework.pipeline(require('./editor-ai-tools'), localUtils);
+    },
+
+    get contentGap() {
+        return apiFramework.pipeline(require('./content-gap'), localUtils);
+    },
+
+    get audioPost() {
+        return apiFramework.pipeline(require('./audio-post'), localUtils);
+    },
+
+    get styleGuard() {
+        return apiFramework.pipeline(require('./style-guard'), localUtils);
+    },
+
+    get contentRepurpose() {
+        return apiFramework.pipeline(require('./content-repurpose'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *

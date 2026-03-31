@@ -65,6 +65,20 @@ Router.map(function () {
 
     this.route('ai-agent');
 
+    this.route('semantic-linker');
+
+    this.route('auto-tagger');
+
+    this.route('content-gap');
+
+    this.route('audio-post');
+
+    this.route('style-guard');
+
+    this.route('content-repurpose');
+
+    this.route('editor-ai');
+
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
         this.route('connect');

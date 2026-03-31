@@ -1193,5 +1193,42 @@ module.exports = {
         member_name: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
+    },
+    post_embeddings: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'posts.id', cascadeDelete: true},
+        embedding: {type: 'text', maxlength: 65535, nullable: false},
+        keywords: {type: 'text', maxlength: 65535, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['post_id']
+        ]
+    },
+    post_audio: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'posts.id', cascadeDelete: true},
+        audio_url: {type: 'string', maxlength: 2000, nullable: true},
+        duration: {type: 'integer', nullable: true, unsigned: true},
+        voice_id: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'default'},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'generating', 'ready', 'error']]}},
+        error_message: {type: 'string', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['post_id']
+        ]
+    },
+    style_guides: {
+        id: {type: 'string', maxlength: 191, nullable: false, primary: true},
+        name: {type: 'string', maxlength: 191, nullable: false},
+        tone_keywords: {type: 'text', maxlength: 65535, nullable: true},
+        forbidden_phrases: {type: 'text', maxlength: 65535, nullable: true},
+        preferred_phrases: {type: 'text', maxlength: 65535, nullable: true},
+        min_reading_level: {type: 'string', maxlength: 50, nullable: true},
+        max_sentence_length: {type: 'string', maxlength: 50, nullable: true},
+        require_active_voice: {type: 'boolean', nullable: false, defaultTo: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     }
 };

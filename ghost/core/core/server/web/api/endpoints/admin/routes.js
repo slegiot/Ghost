@@ -412,5 +412,48 @@ module.exports = function apiRoutes() {
     router.post('/ai-agent/chat', mw.authAdminApi, http(api.aiAgent.chat));
     router.post('/ai-agent/execute', mw.authAdminApi, http(api.aiAgent.execute));
 
+    // ## Semantic Linker
+    router.post('/semantic-linker/suggestions', mw.authAdminApi, http(api.semanticLinker.linkSuggestions));
+    router.post('/semantic-linker/index', mw.authAdminApi, http(api.semanticLinker.indexPost));
+    router.post('/semantic-linker/index-all', mw.authAdminApi, http(api.semanticLinker.indexAll));
+
+    // ## Taxonomy Suggester
+    router.post('/taxonomy/suggest', mw.authAdminApi, http(api.taxonomySuggester.suggest));
+    router.post('/taxonomy/apply', mw.authAdminApi, http(api.taxonomySuggester.apply));
+    router.post('/taxonomy/suggest-batch', mw.authAdminApi, http(api.taxonomySuggester.suggestBatch));
+
+    // ## Content Gap Radar
+    router.post('/content-gap/analyze', mw.authAdminApi, http(api.contentGap.analyze));
+
+    // ## Audio Posts
+    router.post('/audio-post/metadata', mw.authAdminApi, http(api.audioPost.metadata));
+    router.get('/audio-post/list', mw.authAdminApi, http(api.audioPost.list));
+    router.post('/audio-post/generate', mw.authAdminApi, http(api.audioPost.generate));
+
+    // ## Editor AI Tools (Features 3-15)
+    router.post('/editor-ai/content-refresh', mw.authAdminApi, http(api.editorAiTools.contentRefresh));
+    router.post('/editor-ai/content-refresh-scan', mw.authAdminApi, http(api.editorAiTools.contentRefreshScan));
+    router.post('/editor-ai/content-gap', mw.authAdminApi, http(api.editorAiTools.contentGap));
+    router.post('/editor-ai/audio-metadata', mw.authAdminApi, http(api.editorAiTools.audioMetadata));
+    router.post('/editor-ai/style-check', mw.authAdminApi, http(api.editorAiTools.styleCheck));
+    router.post('/editor-ai/repurpose', mw.authAdminApi, http(api.editorAiTools.repurpose));
+    router.post('/editor-ai/sentiment', mw.authAdminApi, http(api.editorAiTools.sentiment));
+    router.post('/editor-ai/paywall-suggest', mw.authAdminApi, http(api.editorAiTools.paywallSuggest));
+    router.post('/editor-ai/alt-text', mw.authAdminApi, http(api.editorAiTools.altText));
+    router.post('/editor-ai/knowledge-base', mw.authAdminApi, http(api.editorAiTools.knowledgeBase));
+    router.post('/editor-ai/subject-lines', mw.authAdminApi, http(api.editorAiTools.subjectLines));
+    router.post('/editor-ai/image-generate', mw.authAdminApi, http(api.editorAiTools.imageGenerate));
+    router.post('/editor-ai/snippets', mw.authAdminApi, http(api.editorAiTools.snippets));
+    router.post('/editor-ai/localize', mw.authAdminApi, http(api.editorAiTools.localize));
+
+    // ## Style Guard
+    router.post('/style-guard/check', mw.authAdminApi, http(api.styleGuard.check));
+    router.post('/style-guard/check-batch', mw.authAdminApi, http(api.styleGuard.checkBatch));
+    router.get('/style-guard/guide', mw.authAdminApi, http(api.styleGuard.getGuide));
+    router.put('/style-guard/guide', mw.authAdminApi, http(api.styleGuard.updateGuide));
+
+    // ## Content Repurpose
+    router.post('/content-repurpose/repurpose', mw.authAdminApi, http(api.contentRepurpose.repurpose));
+
     return router;
 };
