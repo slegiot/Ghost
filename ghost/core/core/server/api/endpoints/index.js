@@ -269,6 +269,10 @@ module.exports = {
         return apiFramework.pipeline(require('./content-repurpose'), localUtils);
     },
 
+    get siteManager() {
+        return apiFramework.pipeline(require('./site-manager'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *

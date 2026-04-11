@@ -232,6 +232,23 @@ module.exports = function apiRoutes() {
         http(api.themes.destroy)
     );
 
+    // ## Site Manager
+    router.get('/site-manager/', mw.authAdminApi, http(api.siteManager.browse));
+    router.get('/site-manager/layouts', mw.authAdminApi, http(api.siteManager.layouts));
+    router.get('/site-manager/adapters', mw.authAdminApi, http(api.siteManager.adapters));
+    router.get('/site-manager/:id', mw.authAdminApi, http(api.siteManager.read));
+    router.get('/site-manager/:id/files', mw.authAdminApi, http(api.siteManager.readFile));
+    router.post('/site-manager/', mw.authAdminApi, http(api.siteManager.add));
+    router.post('/site-manager/import',
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        apiMw.upload.validation({type: 'themes'}),
+        http(api.siteManager.import)
+    );
+    router.put('/site-manager/:id/files', mw.authAdminApi, http(api.siteManager.editFile));
+    router.del('/site-manager/:id/files', mw.authAdminApi, http(api.siteManager.deleteFile));
+    router.del('/site-manager/:id', mw.authAdminApi, http(api.siteManager.destroy));
+
     // ## Notifications
     router.get('/notifications', mw.authAdminApi, http(api.notifications.browse));
     router.post('/notifications', mw.authAdminApi, http(api.notifications.add));
