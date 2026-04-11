@@ -9,9 +9,16 @@ import {cn} from '@tryghost/shade';
 const AiAgentView: React.FC = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [conversationId, setConversationId] = useState<string | undefined>();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const {sendMessage, executeActions} = useAiAgent();
+
+    const getConversationHistory = useCallback(() => {
+        return messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.timestamp
+        }));
+    }, [messages]);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
@@ -28,13 +35,19 @@ const AiAgentView: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const response = await sendMessage(text, conversationId);
-            setConversationId(response.conversationId);
+            const conversationHistory = getConversationHistory();
+            const response = await sendMessage(text, conversationHistory);
 
             const assistantMessage: ChatMessage = {
                 role: 'assistant',
-                content: response.reply,
-                actions: response.actions,
+                content: response.message,
+                actions: response.pendingActions.map(action => ({
+                    id: action.id,
+                    tool: action.tool,
+                    description: `Execute ${action.tool} with provided arguments`,
+                    args: action.arguments,
+                    status: 'pending' as const
+                })),
                 timestamp: Date.now()
             };
 
@@ -50,13 +63,9 @@ const AiAgentView: React.FC = () => {
             setIsLoading(false);
             setTimeout(scrollToBottom, 100);
         }
-    }, [sendMessage, conversationId, scrollToBottom]);
+    }, [sendMessage, getConversationHistory, scrollToBottom]);
 
     const handleApproveAction = useCallback(async (action: PendingAction, messageIndex: number) => {
-        if (!conversationId) {
-            return;
-        }
-
         // Update action status to approved
         setMessages(prev => prev.map((msg, i) => {
             if (i !== messageIndex || !msg.actions) {
@@ -70,7 +79,7 @@ const AiAgentView: React.FC = () => {
         }));
 
         try {
-            const response = await executeActions([action.id], conversationId);
+            const response = await executeActions([action]);
             const result = response.results[0];
 
             setMessages(prev => prev.map((msg, i) => {
@@ -80,7 +89,7 @@ const AiAgentView: React.FC = () => {
                 return {
                     ...msg,
                     actions: msg.actions.map(a => (a.id === action.id
-                        ? {...a, status: result.success ? 'executed' as const : 'failed' as const, result: result.result}
+                        ? {...a, status: result.success ? 'executed' as const : 'failed' as const, result: result.result, error: result.error}
                         : a)
                     )
                 };
@@ -97,7 +106,7 @@ const AiAgentView: React.FC = () => {
                 };
             }));
         }
-    }, [conversationId, executeActions]);
+    }, [executeActions]);
 
     const handleRejectAction = useCallback((action: PendingAction, messageIndex: number) => {
         setMessages(prev => prev.map((msg, i) => {

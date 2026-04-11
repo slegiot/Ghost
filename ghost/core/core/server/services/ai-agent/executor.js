@@ -1,3 +1,4 @@
+/** @type {any} */
 const models = require('../../models');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -196,7 +197,8 @@ class ActionExecutor {
         // First verify the post exists and is published
         const model = await models.Post.findOne({id: args.post_id}, {
             ...options,
-            context: {internal: true}
+            context: {internal: true},
+            withRelated: ['newsletter']
         });
 
         if (!model) {
@@ -207,21 +209,26 @@ class ActionExecutor {
             throw new errors.ValidationError({message: 'Post must be published before it can be sent as a newsletter'});
         }
 
-        // Update the post to trigger email sending
-        const updated = await models.Post.edit({
-            email_only: false,
-            newsletter_id: args.newsletter_id || undefined
-        }, {
-            ...options,
-            id: args.post_id,
-            context: {internal: true}
-        });
+        // Get or set the newsletter
+        let newsletter = model.related('newsletter');
+        if (!newsletter && args.newsletter_id) {
+            newsletter = await models.Newsletter.findOne({id: args.newsletter_id}, {...options, context: {internal: true}});
+        }
+
+        if (!newsletter) {
+            throw new errors.ValidationError({message: 'Newsletter not found. Please specify a valid newsletter_id.'});
+        }
+
+        // Use the email service to create and send the email
+        const emailService = require('../email-service');
+        const email = await emailService.service.createEmail(model);
 
         return {
-            id: updated.id,
-            title: updated.get('title'),
-            status: 'email_queued',
-            message: `Newsletter queued for "${updated.get('title')}"`
+            id: model.id,
+            title: model.get('title'),
+            email_id: email.id,
+            status: 'email_created',
+            message: `Email created for "${model.get('title')}". It will be sent shortly.`
         };
     }
 
@@ -321,7 +328,7 @@ class ActionExecutor {
     }
 
     async semantic_link_suggestion(args, options) {
-        const semanticLinker = require('../services/semantic-linker');
+        const semanticLinker = require('../semantic-linker');
         const service = semanticLinker.getService();
 
         return await service.getLinkSuggestions(
@@ -332,7 +339,7 @@ class ActionExecutor {
     }
 
     async predictive_taxonomy(args, options) {
-        const taxonomySuggester = require('../services/taxonomy-suggester');
+        const taxonomySuggester = require('../taxonomy-suggester');
         const service = taxonomySuggester.getService();
 
         const result = await service.suggestTags(args.post_id, options);

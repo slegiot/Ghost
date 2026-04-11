@@ -16,24 +16,31 @@ interface PendingAction {
     result?: string;
 }
 
+interface BackendPendingAction {
+    id: string;
+    tool: string;
+    arguments: Record<string, unknown>;
+}
+
 interface ChatResponse {
-    reply: string;
-    actions: PendingAction[];
-    conversationId: string;
+    message: string;
+    pendingActions: BackendPendingAction[];
+    status: string;
 }
 
 interface ExecuteResponse {
     results: Array<{
-        actionId: string;
+        tool: string;
         success: boolean;
-        result: string;
+        result: unknown;
+        error?: string;
     }>;
 }
 
 export function useAiAgent() {
     const {apiRoot} = getGhostPaths();
 
-    const sendMessage = async (message: string, conversationId?: string): Promise<ChatResponse> => {
+    const sendMessage = async (message: string, conversationHistory: ChatMessage[] = []): Promise<ChatResponse> => {
         const response = await fetch(`${apiRoot}/ai-agent/chat/`, {
             method: 'POST',
             headers: {
@@ -43,7 +50,7 @@ export function useAiAgent() {
             credentials: 'include',
             body: JSON.stringify({
                 message,
-                conversation_id: conversationId
+                conversation_history: conversationHistory
             })
         });
 
@@ -56,7 +63,7 @@ export function useAiAgent() {
         return data.ai_agent[0] as ChatResponse;
     };
 
-    const executeActions = async (actionIds: string[], conversationId: string): Promise<ExecuteResponse> => {
+    const executeActions = async (actions: PendingAction[]): Promise<ExecuteResponse> => {
         const response = await fetch(`${apiRoot}/ai-agent/execute/`, {
             method: 'POST',
             headers: {
@@ -65,8 +72,11 @@ export function useAiAgent() {
             },
             credentials: 'include',
             body: JSON.stringify({
-                action_ids: actionIds,
-                conversation_id: conversationId
+                actions: actions.map(action => ({
+                    id: action.id,
+                    tool: action.tool,
+                    arguments: action.args
+                }))
             })
         });
 

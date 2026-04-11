@@ -6,12 +6,12 @@ interface QuickActionsProps {
 }
 
 const QUICK_ACTIONS = [
-    {label: '📝 Create a Page', prompt: 'Create a new page for me. What topic should it cover?'},
-    {label: '🏷️ Auto-Tag Content', prompt: 'Analyse my existing posts and suggest tags for any untagged content.'},
-    {label: '🔗 Cross-Link', prompt: 'Find opportunities to cross-link related posts and pages on my site.'},
-    {label: '✨ Optimise Content', prompt: 'Review my recent posts and suggest SEO and readability improvements.'},
-    {label: '📊 Analyse Data', prompt: 'Give me a summary of my site performance — top posts, member growth, and engagement.'},
-    {label: '📧 Send Newsletter', prompt: 'Help me draft and send a newsletter to my subscribers.'}
+    {label: '📝 Create a Page', prompt: 'Create a new page about our company history'},
+    {label: '🏷️ Auto-Tag Content', prompt: 'Auto-tag my recent posts using AI'},
+    {label: '🔗 Link Related Content', prompt: 'Find and suggest internal links between my related posts'},
+    {label: '✨ Optimize Content', prompt: 'Optimize my latest post for better SEO and readability'},
+    {label: '📊 Analyze Site Data', prompt: 'Show me my site analytics for the last 30 days'},
+    {label: '📧 Send Newsletter', prompt: 'Send my most recent published post as a newsletter'}
 ];
 
 const QuickActions: React.FC<QuickActionsProps> = ({onAction}) => {

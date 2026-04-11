@@ -12,12 +12,14 @@ const TOOL_LABELS: Record<string, string> = {
     create_page: 'Create Page',
     create_post: 'Create Post',
     auto_tag: 'Auto-Tag Content',
-    cross_link: 'Cross-Link Content',
-    optimise_content: 'Optimise Content',
-    analyse_performance: 'Analyse Performance',
+    link_related: 'Link Related Content',
+    optimize_content: 'Optimize Content',
     send_newsletter: 'Send Newsletter',
-    list_content: 'List Content',
-    update_content: 'Update Content'
+    analyse_data: 'Analyze Data',
+    browse_posts: 'Browse Posts',
+    browse_pages: 'Browse Pages',
+    semantic_link_suggestion: 'Semantic Link Suggestions',
+    predictive_taxonomy: 'Predictive Taxonomy'
 };
 
 const STATUS_STYLES: Record<string, string> = {
