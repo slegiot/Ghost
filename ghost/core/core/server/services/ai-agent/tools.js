@@ -265,6 +265,31 @@ const tools = [
                 required: ['post_id']
             }
         }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'search_content',
+            description: 'Searches published posts and pages using semantic similarity and keyword matching. Use this to find relevant content when the user asks about specific topics, or when you need context about what has already been written on the site.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    query: {
+                        type: 'string',
+                        description: 'The search query — a topic, phrase, or question to find matching content for'
+                    },
+                    limit: {
+                        type: 'number',
+                        description: 'Maximum number of results to return. Default 5.'
+                    },
+                    include_content: {
+                        type: 'boolean',
+                        description: 'Whether to include full post content in results. Default false (only excerpts).'
+                    }
+                },
+                required: ['query']
+            }
+        }
     }
 ];
 

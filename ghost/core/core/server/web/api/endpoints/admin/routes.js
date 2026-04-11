@@ -411,6 +411,7 @@ module.exports = function apiRoutes() {
     // ## AI Agent
     router.post('/ai-agent/chat', mw.authAdminApi, http(api.aiAgent.chat));
     router.post('/ai-agent/execute', mw.authAdminApi, http(api.aiAgent.execute));
+    router.post('/ai-agent/search', mw.authAdminApi, http(api.aiAgent.search));
 
     // ## Semantic Linker
     router.post('/semantic-linker/suggestions', mw.authAdminApi, http(api.semanticLinker.linkSuggestions));

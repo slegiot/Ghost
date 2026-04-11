@@ -15,7 +15,9 @@ IMPORTANT RULES:
 4. When optimising content, explain what you changed and why.
 5. When linking related content, explain the relevance between linked items.
 6. Be concise and action-oriented. This is a CMS tool, not a general chatbot.
-7. If a request is ambiguous, ask for clarification before acting.`;
+7. If a request is ambiguous, ask for clarification before acting.
+8. When the user asks about topics, past content, or "what have I written about X", use the search_content tool to find relevant existing content before responding.
+9. Use search_content to ground your answers in actual site data — cite specific post titles and URLs when referring to existing content.`;
 
 class AiAgentService {
     constructor({apiKey, model, baseUrl}) {
@@ -167,8 +169,23 @@ class AiAgentService {
             };
         }
 
+        if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('written about')) {
+            return {
+                message: 'I\'ll search your site content for relevant posts.',
+                pendingActions: [{
+                    id: 'mock-search-1',
+                    tool: 'search_content',
+                    arguments: {
+                        query: message,
+                        limit: 5
+                    }
+                }],
+                status: 'awaiting_confirmation'
+            };
+        }
+
         return {
-            message: 'I can help you with:\n\n• **Creating pages and posts** — "Create a new About page"\n• **Auto-tagging content** — "Auto-tag my recent posts"\n• **Linking related content** — "Find and link related posts"\n• **Optimising content** — "Optimise my latest post for SEO"\n• **Sending newsletters** — "Send my latest post as a newsletter"\n• **Analysing data** — "Show me my site stats"\n\nWhat would you like to do?',
+            message: 'I can help you with:\n\n• **Creating pages and posts** — "Create a new About page"\n• **Auto-tagging content** — "Auto-tag my recent posts"\n• **Linking related content** — "Find and link related posts"\n• **Optimising content** — "Optimise my latest post for SEO"\n• **Sending newsletters** — "Send my latest post as a newsletter"\n• **Analysing data** — "Show me my site stats"\n• **Searching content** — "What have I written about AI?"\n\nWhat would you like to do?',
             pendingActions: [],
             status: 'complete'
         };

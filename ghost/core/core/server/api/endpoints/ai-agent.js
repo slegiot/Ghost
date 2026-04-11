@@ -38,6 +38,21 @@ const controller = {
             );
             return {results};
         }
+    },
+
+    search: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: permissionsConfig,
+        async query(frame) {
+            return await executor.search_content({
+                query: frame.data.query,
+                limit: frame.data.limit || 5,
+                include_content: frame.data.include_content || false
+            });
+        }
     }
 };
 

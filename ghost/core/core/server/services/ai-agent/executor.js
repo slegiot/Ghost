@@ -356,7 +356,151 @@ class ActionExecutor {
         return result;
     }
 
+    async search_content(args) {
+        const db = require('../../data/db').knex;
+        const SemanticLinkerService = require('../semantic-linker/semantic-linker-service');
+        const linker = new SemanticLinkerService({models});
+        const limit = args.limit || 5;
+        const query = args.query || '';
+
+        // Extract keywords from the query and generate an embedding
+        const queryKeywords = linker.extractKeywords(query);
+        const queryEmbedding = linker.generateEmbedding(queryKeywords);
+
+        // Get all post embeddings
+        const allEmbeddings = await db('post_embeddings')
+            .select('post_id', 'embedding', 'keywords');
+
+        let results = [];
+
+        if (allEmbeddings.length > 0 && queryKeywords.length > 0) {
+            // Semantic search: compute cosine similarity against all indexed posts
+            for (const row of allEmbeddings) {
+                const similarity = linker.cosineSimilarity(queryEmbedding, row.embedding);
+                if (similarity > 0.05) {
+                    results.push({
+                        post_id: row.post_id,
+                        similarity: Math.round(similarity * 1000) / 1000,
+                        matchedKeywords: this._extractMatchedKeywords(queryKeywords, row.keywords)
+                    });
+                }
+            }
+            results.sort((a, b) => b.similarity - a.similarity);
+            results = results.slice(0, limit);
+        }
+
+        // Fallback: keyword search if no embeddings or no results
+        if (results.length === 0) {
+            const words = query.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .split(/\s+/)
+                .filter(w => w.length > 2)
+                .slice(0, 5);
+
+            if (words.length === 0) {
+                return {results: [], query, method: 'none', message: 'Query too short or generic'};
+            }
+
+            const posts = await models.Post.findPage({
+                filter: 'type:post+status:published',
+                limit: limit * 2,
+                order: 'published_at desc',
+                context: {internal: true},
+                columns: ['id', 'title', 'plaintext', 'slug', 'url', 'published_at']
+            });
+
+            const scored = [];
+            for (const post of posts.data) {
+                const title = (post.get('title') || '').toLowerCase();
+                const text = (post.get('plaintext') || '').toLowerCase();
+                let score = 0;
+
+                for (const word of words) {
+                    if (title.includes(word)) {
+                        score += 3;
+                    }
+                    const regex = new RegExp(word, 'gi');
+                    const matches = text.match(regex);
+                    if (matches) {
+                        score += Math.min(matches.length, 5);
+                    }
+                }
+
+                if (score > 0) {
+                    scored.push({post, score});
+                }
+            }
+
+            scored.sort((a, b) => b.score - a.score);
+            return {
+                results: scored.slice(0, limit).map(s => ({
+                    id: s.post.id,
+                    title: s.post.get('title'),
+                    slug: s.post.get('slug'),
+                    url: s.post.get('url'),
+                    publishedAt: s.post.get('published_at'),
+                    excerpt: (s.post.get('plaintext') || '').substring(0, 500),
+                    relevanceScore: s.score
+                })),
+                query,
+                method: 'keyword'
+            };
+        }
+
+        // Hydrate semantic results with post metadata
+        const postIds = results.map(r => r.post_id);
+        const posts = await models.Post.findPage({
+            filter: `id:[${postIds.join(',')}]+status:published`,
+            limit: postIds.length,
+            context: {internal: true},
+            withRelated: ['tags'],
+            columns: ['id', 'title', 'slug', 'url', 'published_at', 'plaintext', 'html']
+        });
+
+        const postsMap = {};
+        for (const post of posts.data) {
+            postsMap[post.id] = post;
+        }
+
+        return {
+            results: results.filter(r => postsMap[r.post_id]).map((r) => {
+                const post = postsMap[r.post_id];
+                const result = {
+                    id: post.id,
+                    title: post.get('title'),
+                    slug: post.get('slug'),
+                    url: post.get('url'),
+                    publishedAt: post.get('published_at'),
+                    tags: post.related('tags').map(t => t.get('name')),
+                    relevanceScore: r.similarity,
+                    matchedKeywords: r.matchedKeywords,
+                    excerpt: (post.get('plaintext') || '').substring(0, 500)
+                };
+
+                if (args.include_content) {
+                    result.content = (post.get('plaintext') || '').substring(0, 2000);
+                }
+
+                return result;
+            }),
+            query,
+            method: 'semantic'
+        };
+    }
+
     // --- Helpers ---
+
+    _extractMatchedKeywords(queryKeywords, storedKeywordsJson) {
+        try {
+            const stored = JSON.parse(storedKeywordsJson || '[]');
+            const storedTerms = new Set(stored.map(k => k.term));
+            return queryKeywords
+                .filter(k => storedTerms.has(k.term))
+                .map(k => k.term);
+        } catch (err) {
+            return [];
+        }
+    }
 
     _getDateFrom(period) {
         const now = new Date();
@@ -380,3 +524,4 @@ class ActionExecutor {
 }
 
 module.exports = new ActionExecutor();
+
