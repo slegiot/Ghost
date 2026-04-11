@@ -89,7 +89,7 @@ const AiAgentView: React.FC = () => {
                 return {
                     ...msg,
                     actions: msg.actions.map(a => (a.id === action.id
-                        ? {...a, status: result.success ? 'executed' as const : 'failed' as const, result: result.result, error: result.error}
+                        ? {...a, status: result.success ? 'executed' as const : 'failed' as const, result: typeof result.result === 'string' ? result.result : JSON.stringify(result.result), error: result.error}
                         : a)
                     )
                 };
