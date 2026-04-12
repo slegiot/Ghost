@@ -12,10 +12,20 @@ describe('UNIT: sentry', function () {
     afterEach(async function () {
         await configUtils.restore();
         sinon.restore();
+        try {
+            await Sentry.close(2000);
+        } catch (e) {
+            // ignore when client was never started
+        }
+        delete require.cache[require.resolve('../../../core/shared/sentry-setup')];
+        delete require.cache[require.resolve('../../../core/shared/sentry')];
     });
 
     describe('No sentry config', function () {
         beforeEach(function () {
+            // Override any real `config.local.json` Sentry settings during this describe
+            configUtils.set({sentry: {disabled: true, dsn: undefined}});
+            delete require.cache[require.resolve('../../../core/shared/sentry-setup')];
             delete require.cache[require.resolve('../../../core/shared/sentry')];
             sentry = require('../../../core/shared/sentry');
         });
@@ -28,11 +38,11 @@ describe('UNIT: sentry', function () {
     });
 
     describe('With sentry config', function () {
-        beforeEach(function () {
+        beforeEach(async function () {
+            await Sentry.close(2000).catch(() => {});
             configUtils.set({sentry: {disabled: false, dsn: fakeDSN}});
+            delete require.cache[require.resolve('../../../core/shared/sentry-setup')];
             delete require.cache[require.resolve('../../../core/shared/sentry')];
-
-            sinon.spy(Sentry, 'init');
 
             sentry = require('../../../core/shared/sentry');
         });
@@ -44,33 +54,37 @@ describe('UNIT: sentry', function () {
         });
 
         it('initialises sentry correctly', function () {
-            const initArgs = Sentry.init.getCall(0).args;
-
-            assert.equal(initArgs[0].dsn, fakeDSN, 'shoudl be our fake dsn');
-            assert.match(initArgs[0].release, /ghost@\d+\.\d+\.\d+/, 'should be a valid version');
-            assert.equal(initArgs[0].environment, 'testing', 'should be the testing env');
-            assert.ok(initArgs[0].hasOwnProperty('beforeSend'), 'should have a beforeSend function');
+            const client = Sentry.getCurrentHub().getClient();
+            assert.ok(client, 'Sentry client should exist');
+            assert.equal(client.getOptions().dsn, fakeDSN, 'should be our fake dsn');
+            assert.match(client.getOptions().release, /ghost@\d+\.\d+\.\d+/, 'should be a valid version');
+            assert.equal(client.getOptions().environment, 'testing', 'should be the testing env');
+            assert.ok(Object.prototype.hasOwnProperty.call(client.getOptions(), 'beforeSend'), 'should have a beforeSend function');
         });
 
-        it('initialises sentry with the correct environment', function () {
+        it('initialises sentry with the correct environment', async function () {
             const env = 'staging';
 
+            await Sentry.close(2000).catch(() => {});
             configUtils.set({
+                sentry: {disabled: false, dsn: fakeDSN},
                 PRO_ENV: env
             });
 
+            delete require.cache[require.resolve('../../../core/shared/sentry-setup')];
             delete require.cache[require.resolve('../../../core/shared/sentry')];
             require('../../../core/shared/sentry');
 
-            const initArgs = Sentry.init.getCall(1).args;
-
-            assert.equal(initArgs[0].environment, env, 'should be the correct env');
+            const client = Sentry.getCurrentHub().getClient();
+            assert.ok(client);
+            assert.equal(client.getOptions().environment, env, 'should be the correct env');
         });
     });
 
     describe('beforeSend', function () {
         this.beforeEach(function () {
             configUtils.set({sentry: {disabled: false, dsn: fakeDSN}});
+            delete require.cache[require.resolve('../../../core/shared/sentry-setup')];
             delete require.cache[require.resolve('../../../core/shared/sentry')];
 
             sentry = require('../../../core/shared/sentry');
@@ -158,9 +172,11 @@ describe('UNIT: sentry', function () {
 
     describe('beforeSendTransaction', function () {
         it('filters transactions based on an allow list', function () {
+            delete require.cache[require.resolve('../../../core/shared/sentry-setup')];
+            delete require.cache[require.resolve('../../../core/shared/sentry')];
             sentry = require('../../../core/shared/sentry');
 
-            const beforeSendTransaction = sentry. beforeSendTransaction;
+            const beforeSendTransaction = sentry.beforeSendTransaction;
 
             const allowedTransactions = [
                 {transaction: 'GET /ghost/api/settings'},

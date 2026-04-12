@@ -9,6 +9,9 @@
 // Don't allow NODE_ENV to be null
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Sentry must initialize before other Ghost modules are loaded
+require('./instrument');
+
 const argv = process.argv;
 const mode = argv[2];
 
