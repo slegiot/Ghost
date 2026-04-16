@@ -2,7 +2,9 @@ const path = require('path');
 
 const FLAT_CONFIG_WORKSPACES = [
     'e2e',
-    'apps/admin'
+    'apps/admin',
+    'apps/admin-x-settings',
+    'apps/shared-components'
 ];
 
 function normalize(file) {

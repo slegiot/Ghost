@@ -1,28 +1,53 @@
-const logging = require('@tryghost/logging');
+const {validateConfig} = require('../ai-config/validator');
+const {assertServiceReady} = require('../ai-service-utils');
 
 let aiAgentServiceInstance;
 
-module.exports = {
-    async init() {
-        const AiAgentService = require('./ai-agent-service');
-        const config = require('../../../shared/config');
+const service = module.exports = {
+    name: 'ai-agent',
+    _initialized: false,
 
-        const apiKey = config.get('ai_agent:openrouter_api_key') || process.env.OPENROUTER_API_KEY;
+    /**
+     * @param {object} ctx
+     * @param {import('../../../shared/config')} ctx.config
+     * @param {object} ctx.models
+     * @param {typeof import('@tryghost/logging')} ctx.logging
+     * @param {object} ctx.aiConfig
+     */
+    async init(ctx) {
+        const {logging, aiConfig} = ctx;
+        try {
+            const AiAgentService = require('./ai-agent-service');
+            const validation = validateConfig(aiConfig);
 
-        aiAgentServiceInstance = new AiAgentService({
-            apiKey,
-            model: config.get('ai_agent:model') || 'xiaomi/mimo-v2-pro',
-            baseUrl: config.get('ai_agent:base_url') || 'https://openrouter.ai/api/v1'
-        });
+            validation.warnings.forEach((warning) => {
+                logging.warn(`[AI Config] ${warning}`);
+            });
+            validation.errors.forEach((error) => {
+                logging.warn(`[AI Config] ${error}`);
+            });
 
-        logging.info('AI Agent service initialised');
+            aiAgentServiceInstance = new AiAgentService({
+                apiKey: aiConfig.openrouter.apiKey,
+                model: aiConfig.openrouter.defaultModel,
+                baseUrl: aiConfig.openrouter.baseUrl
+            });
+
+            this._initialized = true;
+            logging.info('AI Agent service initialised');
+        } catch (err) {
+            logging.error({err, message: '[ai-agent] init failed'});
+            aiAgentServiceInstance = null;
+            this._initialized = false;
+        }
+    },
+
+    isReady() {
+        return this._initialized === true;
     },
 
     getService() {
-        if (!aiAgentServiceInstance) {
-            const errors = require('@tryghost/errors');
-            throw new errors.InternalServerError({message: 'AI Agent service has not been initialised'});
-        }
+        assertServiceReady(service.name, service.isReady());
         return aiAgentServiceInstance;
     }
 };

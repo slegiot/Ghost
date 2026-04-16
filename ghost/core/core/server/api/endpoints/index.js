@@ -77,6 +77,10 @@ module.exports = {
         return apiFramework.pipeline(require('./settings'), localUtils);
     },
 
+    get aiSettings() {
+        return apiFramework.pipeline(require('./ai-settings'), localUtils);
+    },
+
     get announcements() {
         return apiFramework.pipeline(require('./announcements'), localUtils);
     },

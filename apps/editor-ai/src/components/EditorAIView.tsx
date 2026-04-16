@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
-import {Badge, Button, Input, LucideIcon} from '@tryghost/shade';
+import {Badge, Button, LucideIcon} from '@tryghost/shade';
+import {PostPicker} from '@tryghost/shared-components';
 import {useEditorAI} from '@hooks/useEditorAI';
 import type {EditorAITool} from '@hooks/useEditorAI';
 
@@ -81,11 +82,11 @@ const EditorAIView: React.FC = () => {
                 <div className="mx-auto max-w-4xl space-y-6">
                     <div className="rounded-lg border bg-white p-4 dark:bg-gray-950">
                         <h2 className="mb-3 text-lg font-medium">Select a Tool</h2>
-                        <div className="mb-4">
-                            <Input
-                                placeholder="Post ID (optional for some tools)"
-                                value={postId}
-                                onChange={e => setPostId(e.target.value)}
+                        <div className="mb-4 max-w-md">
+                            <PostPicker
+                                placeholder="Post (optional for some tools)"
+                                value={postId || null}
+                                onChange={id => setPostId(id ?? '')}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">

@@ -1,4 +1,4 @@
-const semanticLinker = require('../../services/semantic-linker');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -16,7 +16,7 @@ const controller = {
         },
         permissions: permissionsConfig,
         async query(frame) {
-            const service = semanticLinker.getService();
+            const service = getService('semantic-linker');
             return await service.getLinkSuggestions(
                 frame.data.post_id,
                 frame.data.content || null,
@@ -32,7 +32,7 @@ const controller = {
         },
         permissions: permissionsConfig,
         async query(frame) {
-            const service = semanticLinker.getService();
+            const service = getService('semantic-linker');
             return await service.indexPost(frame.data.post_id, frame.options);
         }
     },
@@ -44,7 +44,7 @@ const controller = {
         },
         permissions: permissionsConfig,
         async query(frame) {
-            const service = semanticLinker.getService();
+            const service = getService('semantic-linker');
             return await service.indexAllPosts(frame.options);
         }
     }

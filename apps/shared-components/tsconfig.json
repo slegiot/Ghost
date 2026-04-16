@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "module": "ESNext",
+        "skipLibCheck": true,
+        "types": ["vite/client"],
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "jsx": "react-jsx",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@src/*": ["src/*"]
+        }
+    },
+    "include": ["src"]
+}

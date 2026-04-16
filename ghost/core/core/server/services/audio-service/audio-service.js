@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const aiConfig = require('../ai-config');
 
 /**
  * Audio Service for Voice Clone Audio Postings (Feature 5)
@@ -11,10 +12,21 @@ class AudioService {
         this.models = models;
     }
 
+    async _ensureConfigured() {
+        const config = await aiConfig.getConfig();
+        if (!config.elevenlabs.apiKey) {
+            throw new errors.UnprocessableEntityError({
+                message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys.',
+                context: 'ElevenLabs API key is required for audio features.'
+            });
+        }
+    }
+
     /**
      * Get audio metadata for a post. Creates the record if it doesn't exist.
      */
     async getAudioMetadata(postId, options = {}) {
+        await this._ensureConfigured();
         const models = this.models;
         const db = options.transacting || options.knex || require('../../data/db').knex;
 
@@ -75,6 +87,7 @@ class AudioService {
      * List all posts with their audio status.
      */
     async listPostsWithAudio(options = {}) {
+        await this._ensureConfigured();
         const models = this.models;
         const db = options.transacting || options.knex || require('../../data/db').knex;
 
@@ -125,6 +138,7 @@ class AudioService {
      * Generate audio for a post (creates metadata record, actual TTS is async).
      */
     async generateAudio(postId, voiceId = 'default', options = {}) {
+        await this._ensureConfigured();
         const models = this.models;
         const db = options.transacting || options.knex || require('../../data/db').knex;
 

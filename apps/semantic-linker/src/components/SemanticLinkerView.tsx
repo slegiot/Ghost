@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
-import {Badge, Button, Input, LucideIcon} from '@tryghost/shade';
+import {Badge, Button, LucideIcon} from '@tryghost/shade';
+import {PostInput} from '@components/PostInput';
 import {useSemanticLinker} from '@hooks/useSemanticLinker';
 import type {IndexAllResponse, LinkSuggestion} from '@hooks/useSemanticLinker';
 
@@ -92,15 +93,15 @@ const SemanticLinkerView: React.FC = () => {
                     <div className="rounded-lg border bg-white p-4 dark:bg-gray-950">
                         <h2 className="mb-3 text-lg font-medium">Find Internal Link Suggestions</h2>
                         <p className="mb-4 text-sm text-gray-500">
-                            Enter a post ID to find semantically related content for internal linking.
+                            Choose a post or search by title to find semantically related content for internal linking.
                             The analyzer uses NER-based keyword extraction and vector similarity to match intent, not just words.
                         </p>
-                        <div className="flex gap-2">
-                            <Input
-                                className="flex-1"
-                                placeholder="Enter post ID (e.g. 60f6c5e4e8c4a7001c8e4b01)"
-                                value={postId}
-                                onChange={e => setPostId(e.target.value)}
+                        <div className="flex flex-wrap items-start gap-2">
+                            <PostInput
+                                className="min-w-0 flex-1"
+                                placeholder="Search posts by title…"
+                                value={postId || null}
+                                onChange={id => setPostId(id ?? '')}
                             />
                             <Button
                                 disabled={loading || !postId.trim()}

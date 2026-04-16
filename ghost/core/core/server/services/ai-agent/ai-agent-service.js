@@ -1,6 +1,7 @@
 const tools = require('./tools');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const aiConfig = require('../ai-config');
 
 const SYSTEM_PROMPT = `You are an AI assistant embedded in the Ghost CMS admin panel. You help site administrators manage their content, optimise their site, and understand their analytics.
 
@@ -24,10 +25,15 @@ class AiAgentService {
         this.apiKey = apiKey;
         this.model = model;
         this.baseUrl = baseUrl || 'https://openrouter.ai/api/v1';
-        this.mockMode = !apiKey;
+    }
 
-        if (this.mockMode) {
-            logging.warn('AI Agent running in mock mode — no OpenRouter API key configured');
+    async _ensureConfigured() {
+        const config = await aiConfig.getConfig();
+        if (!config.openrouter.apiKey) {
+            throw new errors.UnprocessableEntityError({
+                message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys.',
+                context: 'OpenRouter API key is required for AI Agent.'
+            });
         }
     }
 
@@ -35,9 +41,7 @@ class AiAgentService {
      * Process a chat message and return the agent's response with any pending actions
      */
     async chat({message, conversationHistory = []}) {
-        if (this.mockMode) {
-            return this._mockChat(message);
-        }
+        await this._ensureConfigured();
 
         const messages = [
             {role: 'system', content: SYSTEM_PROMPT},
@@ -98,97 +102,6 @@ class AiAgentService {
             logging.error({err, message: 'AI Agent chat error'});
             throw err;
         }
-    }
-
-    /**
-     * Mock responses for development without an API key
-     */
-    _mockChat(message) {
-        const lowerMessage = message.toLowerCase();
-
-        if (lowerMessage.includes('create') && lowerMessage.includes('page')) {
-            return {
-                message: 'I\'ll create a new page for you. Here\'s what I\'m proposing:',
-                pendingActions: [{
-                    id: 'mock-1',
-                    tool: 'create_page',
-                    arguments: {
-                        title: 'About Us',
-                        content: '<p>Welcome to our site. This page was created by the AI Agent.</p>',
-                        status: 'draft',
-                        tags: ['about']
-                    }
-                }],
-                status: 'awaiting_confirmation'
-            };
-        }
-
-        if (lowerMessage.includes('tag') || lowerMessage.includes('auto-tag')) {
-            return {
-                message: 'I\'ll analyse your recent posts and suggest tags. Here\'s my proposal:',
-                pendingActions: [{
-                    id: 'mock-2',
-                    tool: 'auto_tag',
-                    arguments: {
-                        scope: 'recent',
-                        limit: 10
-                    }
-                }],
-                status: 'awaiting_confirmation'
-            };
-        }
-
-        if (lowerMessage.includes('stats') || lowerMessage.includes('analy')) {
-            return {
-                message: 'I\'ll pull your site analytics now.',
-                pendingActions: [{
-                    id: 'mock-3',
-                    tool: 'analyse_data',
-                    arguments: {
-                        metrics: ['member_count', 'mrr', 'top_posts'],
-                        period: '30d'
-                    }
-                }],
-                status: 'awaiting_confirmation'
-            };
-        }
-
-        if (lowerMessage.includes('newsletter') || lowerMessage.includes('send')) {
-            return {
-                message: 'I can help you send a newsletter. Which post would you like to send?',
-                pendingActions: [],
-                status: 'complete'
-            };
-        }
-
-        if (lowerMessage.includes('optimis') || lowerMessage.includes('optimiz')) {
-            return {
-                message: 'I\'ll review your content and suggest optimisations. Which post would you like me to look at?',
-                pendingActions: [],
-                status: 'complete'
-            };
-        }
-
-        if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('written about')) {
-            return {
-                message: 'I\'ll search your site content for relevant posts.',
-                pendingActions: [{
-                    id: 'mock-search-1',
-                    tool: 'search_content',
-                    arguments: {
-                        query: message,
-                        limit: 5
-                    }
-                }],
-                status: 'awaiting_confirmation'
-            };
-        }
-
-        return {
-            message: 'I can help you with:\n\n• **Creating pages and posts** — "Create a new About page"\n• **Auto-tagging content** — "Auto-tag my recent posts"\n• **Linking related content** — "Find and link related posts"\n• **Optimising content** — "Optimise my latest post for SEO"\n• **Sending newsletters** — "Send my latest post as a newsletter"\n• **Analysing data** — "Show me my site stats"\n• **Searching content** — "What have I written about AI?"\n\nWhat would you like to do?',
-            pendingActions: [],
-            status: 'complete'
-        };
     }
 }
 

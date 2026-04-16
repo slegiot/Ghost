@@ -33,6 +33,7 @@
     },
     "dependencies": {
         "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/shared-components": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "react": "18.3.1",
         "react-dom": "18.3.1"

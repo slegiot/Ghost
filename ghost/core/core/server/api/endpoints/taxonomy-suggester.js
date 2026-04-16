@@ -1,4 +1,4 @@
-const taxonomySuggester = require('../../services/taxonomy-suggester');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -14,7 +14,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = taxonomySuggester.getService();
+            const service = getService('taxonomy-suggester');
             return await service.suggestTags(frame.data.post_id, frame.options);
         }
     },
@@ -24,7 +24,7 @@ const controller = {
         headers: {cacheInvalidate: true},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = taxonomySuggester.getService();
+            const service = getService('taxonomy-suggester');
             return await service.autoApplyTags(
                 frame.data.post_id,
                 frame.data.suggestions || [],
@@ -38,7 +38,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = taxonomySuggester.getService();
+            const service = getService('taxonomy-suggester');
             return await service.suggestForRecent(frame.data.limit || 10, frame.options);
         }
     }

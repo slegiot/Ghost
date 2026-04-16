@@ -306,10 +306,11 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices() {
+async function initServices({config}) {
     debug('Begin: initServices');
 
     debug('Begin: Services');
+    const logging = require('@tryghost/logging');
     const identityTokens = require('./server/services/identity-tokens');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
@@ -338,14 +339,6 @@ async function initServices() {
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
-    const aiAgentService = require('./server/services/ai-agent');
-    const semanticLinkerService = require('./server/services/semantic-linker');
-    const taxonomySuggesterService = require('./server/services/taxonomy-suggester');
-    const contentGapService = require('./server/services/content-gap');
-    const audioService = require('./server/services/audio-service');
-    const styleGuardService = require('./server/services/style-guard');
-    const contentRepurposeService = require('./server/services/content-repurpose');
-    const editorAIToolsService = require('./server/services/editor-ai-tools');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -384,19 +377,44 @@ async function initServices() {
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
-        explorePingService.init(),
-        aiAgentService.init()
+        explorePingService.init()
     ]);
 
-    // Semantic linker depends on models and ai-agent, init after
     const models = require('./server/models');
-    await semanticLinkerService.init({models});
-    await taxonomySuggesterService.init({models});
-    await contentGapService.init({models});
-    await audioService.init({models});
-    await styleGuardService.init({models});
-    await contentRepurposeService.init({models});
-    await editorAIToolsService.init({models});
+    const customServices = require('./server/services');
+    let aiConfigData;
+    try {
+        aiConfigData = await require('./server/services/ai-config').getConfig();
+    } catch (err) {
+        logging.error({err, message: '[boot] AI config could not be loaded; continuing with empty AI config'});
+        aiConfigData = {
+            openrouter: {
+                apiKey: '',
+                baseUrl: 'https://openrouter.ai/api/v1',
+                defaultModel: 'xiaomi/mimo-v2-pro',
+                embeddingModel: 'text-embedding-3-small'
+            },
+            elevenlabs: {apiKey: '', defaultVoiceId: ''},
+            openai: {apiKey: ''},
+            features: {
+                aiAgent: false,
+                semanticLinker: false,
+                audioPost: false,
+                styleGuard: false,
+                contentRepurpose: false,
+                editorAiTools: false,
+                contentGap: false,
+                seocopilot: false
+            }
+        };
+    }
+
+    await customServices.initAiServices({
+        config,
+        models,
+        logging,
+        aiConfig: aiConfigData
+    });
     debug('End: Services');
 
     debug('End: initServices');
@@ -561,7 +579,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        await initServices();
+        await initServices({config});
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

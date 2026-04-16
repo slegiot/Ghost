@@ -684,5 +684,67 @@
             "defaultValue": null,
             "type": "string"
         }
+    },
+    "ai": {
+        "ai_openrouter_api_key": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_openrouter_base_url": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_openrouter_default_model": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_openrouter_embedding_model": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_elevenlabs_api_key": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_elevenlabs_default_voice_id": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_openai_api_key": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "ai_feature_ai_agent": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_semantic_linker": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_audio_post": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_style_guard": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_content_repurpose": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_editor_ai_tools": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_content_gap": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "ai_feature_seocopilot": {
+            "defaultValue": "false",
+            "type": "boolean"
+        }
     }
 }

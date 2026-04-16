@@ -1,4 +1,4 @@
-const audioService = require('../../services/audio-service');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -14,7 +14,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = audioService.getService();
+            const service = getService('audio-service');
             return await service.getAudioMetadata(frame.data.post_id, frame.options);
         }
     },
@@ -24,7 +24,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = audioService.getService();
+            const service = getService('audio-service');
             return await service.listPostsWithAudio(frame.options);
         }
     },
@@ -34,7 +34,7 @@ const controller = {
         headers: {cacheInvalidate: true},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = audioService.getService();
+            const service = getService('audio-service');
             return await service.generateAudio(
                 frame.data.post_id,
                 frame.data.voice_id || 'default',

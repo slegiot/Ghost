@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
-import {Badge, Button, Input, LucideIcon} from '@tryghost/shade';
+import {Badge, Button, LucideIcon} from '@tryghost/shade';
+import {PostPicker} from '@tryghost/shared-components';
 import {useContentRepurpose} from '@hooks/useContentRepurpose';
 import type {RepurposePost, RepurposeResponse} from '@hooks/useContentRepurpose';
 
@@ -66,8 +67,13 @@ const ContentRepurposeView: React.FC = () => {
                             Generate a LinkedIn thread, Twitter thread, and newsletter summary from a single post.
                             Each format uses platform-specific constraints and conventions.
                         </p>
-                        <div className="flex gap-2">
-                            <Input className="flex-1" placeholder="Enter post ID" value={postId} onChange={e => setPostId(e.target.value)} />
+                        <div className="flex flex-wrap items-start gap-2">
+                            <PostPicker
+                                className="min-w-0 flex-1"
+                                placeholder="Search posts by title…"
+                                value={postId || null}
+                                onChange={id => setPostId(id ?? '')}
+                            />
                             <Button disabled={loading || !postId.trim()} onClick={handleRepurpose}>
                                 {loading ? 'Generating...' : 'Repurpose'}
                             </Button>

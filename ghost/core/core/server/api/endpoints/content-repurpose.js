@@ -1,4 +1,4 @@
-const contentRepurpose = require('../../services/content-repurpose');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -14,7 +14,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = contentRepurpose.getService();
+            const service = getService('content-repurpose');
             return await service.repurpose(
                 frame.data.post_id,
                 frame.data.formats || ['linkedin', 'twitter', 'newsletter'],

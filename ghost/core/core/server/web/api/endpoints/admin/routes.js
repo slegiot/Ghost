@@ -87,6 +87,9 @@ module.exports = function apiRoutes() {
 
     router.get('/settings', mw.authAdminApi, http(api.settings.browse));
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
+    router.get('/ai-settings', mw.authAdminApi, http(api.aiSettings.read));
+    router.put('/ai-settings', mw.authAdminApi, http(api.aiSettings.edit));
+    router.post('/ai-settings/test/:provider', mw.authAdminApi, http(api.aiSettings.test));
     router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
     router.del('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
 

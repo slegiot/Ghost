@@ -1,4 +1,4 @@
-const editorAITools = require('../../services/editor-ai-tools');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -14,7 +14,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.detectDecay(frame.data.post_id, frame.options);
         }
     },
@@ -24,7 +24,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.scanAllPosts(frame.options);
         }
     },
@@ -34,7 +34,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.analyzeContentGaps(frame.options);
         }
     },
@@ -44,7 +44,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.generateAudioMetadata(frame.data.post_id, frame.data.voice_id, frame.options);
         }
     },
@@ -54,7 +54,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.checkStyle(frame.data.post_id, frame.data.style_guide || {}, frame.options);
         }
     },
@@ -64,7 +64,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.repurposeContent(frame.data.post_id, frame.data.formats, frame.options);
         }
     },
@@ -74,7 +74,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.analyzeSentiment(frame.data.post_id, frame.options);
         }
     },
@@ -84,7 +84,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.suggestPaywallPosition(frame.data.post_id, frame.options);
         }
     },
@@ -94,7 +94,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.generateAltText(frame.data.image_url, frame.data.context);
         }
     },
@@ -104,7 +104,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.queryKnowledgeBase(frame.data.question, frame.options);
         }
     },
@@ -114,7 +114,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.predictSubjectLines(frame.data.post_id, frame.options);
         }
     },
@@ -124,7 +124,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.generateImageContext(frame.data.post_id, frame.options);
         }
     },
@@ -134,7 +134,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.extractSnippets(frame.data.post_id, frame.data.max_snippets, frame.options);
         }
     },
@@ -144,7 +144,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = editorAITools.getService();
+            const service = getService('editor-ai-tools');
             return await service.localizeContent(frame.data.post_id, frame.data.locale, frame.options);
         }
     }

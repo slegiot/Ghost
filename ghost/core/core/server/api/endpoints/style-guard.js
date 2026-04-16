@@ -1,4 +1,4 @@
-const styleGuard = require('../../services/style-guard');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -14,7 +14,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = styleGuard.getService();
+            const service = getService('style-guard');
             return await service.checkContent(frame.data.post_id, frame.data.style_guide || null, frame.options);
         }
     },
@@ -24,7 +24,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = styleGuard.getService();
+            const service = getService('style-guard');
             return await service.checkBatch(frame.data.post_ids || [], frame.options);
         }
     },
@@ -34,7 +34,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = styleGuard.getService();
+            const service = getService('style-guard');
             return await service.getStyleGuide(frame.options);
         }
     },
@@ -44,7 +44,7 @@ const controller = {
         headers: {cacheInvalidate: true},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = styleGuard.getService();
+            const service = getService('style-guard');
             return await service.updateStyleGuide(frame.data.style_guide || {}, frame.options);
         }
     }

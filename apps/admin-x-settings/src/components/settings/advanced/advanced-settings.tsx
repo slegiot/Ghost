@@ -1,3 +1,4 @@
+import AiSettings from './ai-settings';
 import CodeInjection from './code-injection';
 import DangerZone from './danger-zone';
 import History from './history';
@@ -13,13 +14,15 @@ export const searchKeywords = {
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
     labs: ['advanced', 'labs', 'alpha', 'private', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
-    dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site']
+    dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site'],
+    aiSettings: ['advanced', 'ai', 'openrouter', 'elevenlabs', 'openai', 'api key', 'semantic', 'agent', 'audio']
 };
 
 const AdvancedSettings: React.FC = () => {
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Advanced'>
             <Integrations keywords={searchKeywords.integrations} />
+            <AiSettings keywords={searchKeywords.aiSettings} />
             <MigrationTools keywords={searchKeywords.migrationtools} />
             <CodeInjection keywords={searchKeywords.codeInjection} />
             <Labs keywords={searchKeywords.labs} />

@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
-import {Badge, Button, Input, LucideIcon} from '@tryghost/shade';
+import {Badge, Button, LucideIcon} from '@tryghost/shade';
+import {PostPicker} from '@tryghost/shared-components';
 import {useAutoTagger} from '@hooks/useAutoTagger';
 import type {BatchSuggestResponse, SuggestResponse} from '@hooks/useAutoTagger';
 
@@ -85,12 +86,12 @@ const AutoTaggerView: React.FC = () => {
                         <p className="mb-4 text-sm text-gray-500">
                             Analyze a post to get AI-powered tag suggestions based on content topics and your existing tag structure.
                         </p>
-                        <div className="flex gap-2">
-                            <Input
-                                className="flex-1"
-                                placeholder="Enter post ID"
-                                value={postId}
-                                onChange={e => setPostId(e.target.value)}
+                        <div className="flex flex-wrap items-start gap-2">
+                            <PostPicker
+                                className="min-w-0 flex-1"
+                                placeholder="Search posts by title…"
+                                value={postId || null}
+                                onChange={id => setPostId(id ?? '')}
                             />
                             <Button disabled={loading || !postId.trim()} onClick={handleAnalyze}>
                                 {loading ? 'Analyzing...' : 'Analyze Post'}

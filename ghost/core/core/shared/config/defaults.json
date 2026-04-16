@@ -309,4 +309,12 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false
+    ,
+    "ai": {
+        "openrouter": {
+            "baseUrl": "https://openrouter.ai/api/v1",
+            "defaultModel": "xiaomi/mimo-v2-pro",
+            "embeddingModel": "text-embedding-3-small"
+        }
+    }
 }

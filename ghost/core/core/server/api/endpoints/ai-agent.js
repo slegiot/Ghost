@@ -1,4 +1,4 @@
-const aiAgentService = require('../../services/ai-agent');
+const {getService} = require('../../services');
 const executor = require('../../services/ai-agent/executor');
 
 const permissionsConfig = {
@@ -17,7 +17,7 @@ const controller = {
         },
         permissions: permissionsConfig,
         async query(frame) {
-            const service = aiAgentService.getService();
+            const service = getService('ai-agent');
             return await service.chat({
                 message: frame.data.message,
                 conversationHistory: frame.data.conversation_history || []

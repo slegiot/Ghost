@@ -1,4 +1,4 @@
-const contentGap = require('../../services/content-gap');
+const {getService} = require('../../services');
 
 const permissionsConfig = {
     docName: 'posts',
@@ -14,7 +14,7 @@ const controller = {
         headers: {cacheInvalidate: false},
         permissions: permissionsConfig,
         async query(frame) {
-            const service = contentGap.getService();
+            const service = getService('content-gap');
             return await service.analyzeTopicalAuthority(frame.options);
         }
     }

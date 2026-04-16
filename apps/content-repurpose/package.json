@@ -10,6 +10,6 @@
     "private": true,
     "scripts": {"dev": "vite build --watch", "dev:start": "vite", "build": "tsc && vite build", "lint": "yarn run lint:code", "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src", "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix", "preview": "vite preview"},
     "devDependencies": {"@tanstack/react-query": "4.36.1", "@types/react": "18.3.26", "vite": "5.4.20", "vitest": "1.6.1"},
-    "dependencies": {"@tryghost/admin-x-framework": "0.0.0", "@tryghost/shade": "0.0.0", "react": "18.3.1", "react-dom": "18.3.1"},
+    "dependencies": {"@tryghost/admin-x-framework": "0.0.0", "@tryghost/shared-components": "0.0.0", "@tryghost/shade": "0.0.0", "react": "18.3.1", "react-dom": "18.3.1"},
     "nx": {"targets": {"dev": {"dependsOn": ["^build"]}}}
 }

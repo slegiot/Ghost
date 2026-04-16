@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
 import {Badge, Button, Input, LucideIcon} from '@tryghost/shade';
+import {PostPicker} from '@tryghost/shared-components';
 import {useStyleGuard} from '@hooks/useStyleGuard';
 import type {StyleCheckResponse, StyleGuide} from '@hooks/useStyleGuard';
 
@@ -88,8 +89,13 @@ const StyleGuardView: React.FC = () => {
                             Flag phrases that do not match your brand voice. Checks forbidden phrases, sentence length,
                             and passive voice usage.
                         </p>
-                        <div className="flex gap-2">
-                            <Input className="flex-1" placeholder="Enter post ID" value={postId} onChange={e => setPostId(e.target.value)} />
+                        <div className="flex flex-wrap items-start gap-2">
+                            <PostPicker
+                                className="min-w-0 flex-1"
+                                placeholder="Search posts by title…"
+                                value={postId || null}
+                                onChange={id => setPostId(id ?? '')}
+                            />
                             <Button disabled={loading || !postId.trim()} onClick={handleCheck}>
                                 {loading ? 'Checking...' : 'Check Style'}
                             </Button>

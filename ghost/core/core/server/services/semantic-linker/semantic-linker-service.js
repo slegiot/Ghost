@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars, no-plusplus, camelcase */
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const aiConfig = require('../ai-config');
 
 /**
  * Semantic Linker Service
@@ -10,6 +11,16 @@ const errors = require('@tryghost/errors');
 class SemanticLinkerService {
     constructor({models}) {
         this.models = models;
+    }
+
+    async _ensureConfigured() {
+        const config = await aiConfig.getConfig();
+        if (!config.openrouter.apiKey && !config.openai.apiKey) {
+            throw new errors.UnprocessableEntityError({
+                message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys.',
+                context: 'OpenRouter or OpenAI API key is required for semantic linker features.'
+            });
+        }
     }
 
     /**
@@ -101,6 +112,7 @@ class SemanticLinkerService {
      * Index a post's embedding and keywords into the database.
      */
     async indexPost(postId, options = {}) {
+        await this._ensureConfigured();
         const models = this.models;
         const post = await models.Post.findOne({id: postId}, {
             ...options,
@@ -150,6 +162,7 @@ class SemanticLinkerService {
      * Returns suggestions with similarity scores and anchor text candidates.
      */
     async findRelatedPosts(postId, {maxResults = 5, minSimilarity = 0.1} = {}, options = {}) {
+        await this._ensureConfigured();
         const models = this.models;
         const db = options.transacting || options.knex || require('../../data/db').knex;
 
@@ -242,6 +255,7 @@ class SemanticLinkerService {
      * Index all published posts (for batch re-indexing).
      */
     async indexAllPosts(options = {}) {
+        await this._ensureConfigured();
         const models = this.models;
         const db = options.transacting || options.knex || require('../../data/db').knex;
 
@@ -273,6 +287,7 @@ class SemanticLinkerService {
      * Returns suggestions with anchor text and URL for quick insertion.
      */
     async getLinkSuggestions(postId, postContent, options = {}) {
+        await this._ensureConfigured();
         const related = await this.findRelatedPosts(postId, {maxResults: 8}, options);
 
         return {

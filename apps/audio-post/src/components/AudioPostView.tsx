@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
-import {Badge, Button, Input, LucideIcon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade';
+import {Badge, Button, LucideIcon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade';
+import {PostPicker} from '@tryghost/shared-components';
 import {useAudioPost} from '@hooks/useAudioPost';
 import type {AudioMetadataResponse, PostAudioItem, Voice} from '@hooks/useAudioPost';
 
@@ -106,12 +107,12 @@ const AudioPostView: React.FC = () => {
                             Convert any post into a high-fidelity audio narration using AI voice cloning.
                             Select a voice style and generate an audio version for commuters and accessibility.
                         </p>
-                        <div className="flex gap-2">
-                            <Input
-                                className="flex-1"
-                                placeholder="Enter post ID"
-                                value={postId}
-                                onChange={e => setPostId(e.target.value)}
+                        <div className="flex flex-wrap items-start gap-2">
+                            <PostPicker
+                                className="min-w-0 flex-1"
+                                placeholder="Search posts by title…"
+                                value={postId || null}
+                                onChange={id => setPostId(id ?? '')}
                             />
                             <Button disabled={loading || !postId.trim()} onClick={handleFetchMetadata}>
                                 {loading ? 'Loading...' : 'Check Post'}
