@@ -15,7 +15,7 @@ class AudioService {
     async _ensureConfigured() {
         const config = await aiConfig.getConfig();
         if (!config.elevenlabs.apiKey) {
-            throw new errors.UnprocessableEntityError({
+            throw new errors.ValidationError({
                 message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys.',
                 context: 'ElevenLabs API key is required for audio features.'
             });

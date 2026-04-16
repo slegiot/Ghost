@@ -30,7 +30,7 @@ class AiAgentService {
     async _ensureConfigured() {
         const config = await aiConfig.getConfig();
         if (!config.openrouter.apiKey) {
-            throw new errors.UnprocessableEntityError({
+            throw new errors.ValidationError({
                 message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys.',
                 context: 'OpenRouter API key is required for AI Agent.'
             });
