@@ -36,8 +36,8 @@ const FEATURE_KEYS = [
 
 const AiSettings: React.FC<{keywords: string[]}> = ({keywords}) => {
     const {data} = useBrowseAiSettings();
-    const {mutateAsync: saveSettings, isPending: isSaving} = useEditAiSettings();
-    const {mutateAsync: testProvider, isPending: isTesting} = useTestAiProvider();
+    const {mutateAsync: saveSettings, isLoading: isSaving} = useEditAiSettings();
+    const {mutateAsync: testProvider, isLoading: isTesting} = useTestAiProvider();
 
     const settingByKey = useMemo(() => {
         const settings = data?.settings || [];
