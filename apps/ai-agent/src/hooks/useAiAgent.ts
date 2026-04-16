@@ -79,8 +79,20 @@ export function useAiAgent() {
             throw new Error(`AI Agent request failed (${response.status}): ${errorBody}`);
         }
 
-        const data = await response.json();
-        return data.ai_agent[0] as ChatResponse;
+        const data: {ai_agent?: unknown} = await response.json();
+        const row = data?.ai_agent;
+        const first = Array.isArray(row) ? row[0] : row;
+        if (!first || typeof first !== 'object') {
+            throw new Error(`Unexpected AI Agent response shape: ${JSON.stringify(data).slice(0, 240)}`);
+        }
+        const r = first as Record<string, unknown>;
+        const pending = r.pendingActions ?? r.pending_actions;
+        const messageVal = r.message;
+        return {
+            message: typeof messageVal === 'string' ? messageVal : (messageVal !== null && messageVal !== undefined) ? String(messageVal) : '',
+            pendingActions: Array.isArray(pending) ? (pending as BackendPendingAction[]) : [],
+            status: typeof r.status === 'string' ? r.status : 'complete'
+        };
     };
 
     const executeActions = async (actions: PendingAction[]): Promise<ExecuteResponse> => {
@@ -105,8 +117,13 @@ export function useAiAgent() {
             throw new Error(`AI Agent execute failed (${response.status}): ${errorBody}`);
         }
 
-        const data = await response.json();
-        return data.ai_agent[0] as ExecuteResponse;
+        const data: {ai_agent?: unknown} = await response.json();
+        const row = data?.ai_agent;
+        const first = Array.isArray(row) ? row[0] : row;
+        if (!first || typeof first !== 'object') {
+            throw new Error(`Unexpected AI Agent execute response: ${JSON.stringify(data).slice(0, 240)}`);
+        }
+        return first as ExecuteResponse;
     };
 
     const searchContent = async (query: string, limit = 5): Promise<SearchResponse> => {
@@ -125,8 +142,13 @@ export function useAiAgent() {
             throw new Error(`AI Agent search failed (${response.status}): ${errorBody}`);
         }
 
-        const data = await response.json();
-        return data.ai_agent[0] as SearchResponse;
+        const data: {ai_agent?: unknown} = await response.json();
+        const row = data?.ai_agent;
+        const first = Array.isArray(row) ? row[0] : row;
+        if (!first || typeof first !== 'object') {
+            throw new Error(`Unexpected AI Agent search response: ${JSON.stringify(data).slice(0, 240)}`);
+        }
+        return first as SearchResponse;
     };
 
     return {sendMessage, executeActions, searchContent};

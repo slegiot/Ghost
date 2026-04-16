@@ -109,7 +109,7 @@ const AiAgentView: React.FC = () => {
             const assistantMessage: ChatMessage = {
                 role: 'assistant',
                 content: response.message,
-                actions: response.pendingActions.map(action => ({
+                actions: (response.pendingActions ?? []).map(action => ({
                     id: action.id,
                     tool: action.tool,
                     description: `Execute ${action.tool} with provided arguments`,

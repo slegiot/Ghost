@@ -125,16 +125,21 @@ function renderInline(text: string): React.ReactNode {
 const MessageBubble: React.FC<MessageBubbleProps> = ({message}) => {
     const isUser = message.role === 'user';
     const [copied, setCopied] = useState(false);
+    const safeContent = message.content === null || message.content === undefined
+        ? ''
+        : typeof message.content === 'string'
+            ? message.content
+            : String(message.content);
 
     const handleCopy = useCallback(async () => {
         try {
-            await navigator.clipboard.writeText(message.content);
+            await navigator.clipboard.writeText(safeContent);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch {
             // Clipboard API may fail in some contexts
         }
-    }, [message.content]);
+    }, [safeContent]);
 
     return (
         <div className={cn(
@@ -168,16 +173,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({message}) => {
                         : 'rounded-tl-sm bg-white ring-1 ring-black/5 dark:bg-zinc-900 dark:ring-white/10 text-foreground'
                 )}>
                     {isUser ? (
-                        message.content.split('\n').map((line, i) => (
+                        safeContent.split('\n').map((line, i) => (
                             // eslint-disable-next-line react/no-array-index-key
                             <React.Fragment key={i}>
                                 {line}
-                                {i < message.content.split('\n').length - 1 && <br />}
+                                {i < safeContent.split('\n').length - 1 && <br />}
                             </React.Fragment>
                         ))
                     ) : (
                         <div className="space-y-0.5">
-                            {renderMarkdown(message.content)}
+                            {renderMarkdown(safeContent)}
                         </div>
                     )}
                 </div>

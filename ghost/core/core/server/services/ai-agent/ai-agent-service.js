@@ -3,6 +3,31 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const aiConfig = require('../ai-config');
 
+function normalizeAssistantText(message) {
+    if (!message) {
+        return '';
+    }
+    const c = message.content;
+    if (typeof c === 'string') {
+        return c;
+    }
+    if (c === null || c === undefined) {
+        return '';
+    }
+    if (Array.isArray(c)) {
+        return c.map((part) => {
+            if (typeof part === 'string') {
+                return part;
+            }
+            if (part && typeof part === 'object' && part.type === 'text' && part.text) {
+                return part.text;
+            }
+            return '';
+        }).join('');
+    }
+    return String(c);
+}
+
 const SYSTEM_PROMPT = `You are an AI assistant embedded in the Ghost CMS admin panel. You help site administrators manage their content, optimise their site, and understand their analytics.
 
 You have access to the following tools to interact with the Ghost CMS:
@@ -78,7 +103,11 @@ class AiAgentService {
             }
 
             const data = await response.json();
-            const choice = data.choices[0];
+            const choice = data.choices && data.choices[0];
+            if (!choice || !choice.message) {
+                logging.error('OpenRouter response missing choice message', {data: JSON.stringify(data).slice(0, 500)});
+                throw new errors.InternalServerError({message: 'AI service returned an empty response'});
+            }
 
             if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
                 const pendingActions = choice.message.tool_calls.map(tc => ({
@@ -87,15 +116,17 @@ class AiAgentService {
                     arguments: JSON.parse(tc.function.arguments)
                 }));
 
+                const text = normalizeAssistantText(choice.message);
                 return {
-                    message: choice.message.content || 'I\'d like to perform the following actions:',
+                    message: text || 'I\'d like to perform the following actions:',
                     pendingActions,
                     status: 'awaiting_confirmation'
                 };
             }
 
+            const text = normalizeAssistantText(choice.message);
             return {
-                message: choice.message.content,
+                message: text,
                 pendingActions: [],
                 status: 'complete'
             };
