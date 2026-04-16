@@ -290,6 +290,94 @@ const tools = [
                 required: ['query']
             }
         }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'update_post',
+            description: 'Updates an existing post or page with new title, content, or meta fields.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    post_id: {
+                        type: 'string',
+                        description: 'The ID of the post or page to update'
+                    },
+                    title: {
+                        type: 'string',
+                        description: 'New title for the post'
+                    },
+                    content: {
+                        type: 'string',
+                        description: 'New HTML content for the post'
+                    },
+                    meta_title: {
+                        type: 'string',
+                        description: 'SEO meta title (overrides title in search results)'
+                    },
+                    meta_description: {
+                        type: 'string',
+                        description: 'SEO meta description (appears in search results)'
+                    },
+                    status: {
+                        type: 'string',
+                        enum: ['draft', 'published', 'scheduled'],
+                        description: 'Update the post status'
+                    }
+                },
+                required: ['post_id']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'apply_tags',
+            description: 'Applies tags to an existing post or page. Creates new tags if they do not exist.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    post_id: {
+                        type: 'string',
+                        description: 'The ID of the post or page to tag'
+                    },
+                    tags: {
+                        type: 'array',
+                        items: {type: 'string'},
+                        description: 'Array of tag names to apply'
+                    }
+                },
+                required: ['post_id', 'tags']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'insert_links',
+            description: 'Inserts internal links to related posts/pages within the HTML content of a post.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    post_id: {
+                        type: 'string',
+                        description: 'The ID of the post to add links to'
+                    },
+                    links: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                target_post_id: {type: 'string'},
+                                anchor_text: {type: 'string'}
+                            }
+                        },
+                        description: 'Array of links to insert. Each link targets a post by ID and specifies the anchor text.'
+                    }
+                },
+                required: ['post_id', 'links']
+            }
+        }
     }
 ];
 

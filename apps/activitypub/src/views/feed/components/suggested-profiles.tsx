@@ -12,6 +12,7 @@ const SuggestedProfiles: React.FC = () => {
     const navigate = useNavigateWithBasePath();
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+    const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 10);
     const {data: suggestedProfilesData = [], isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
@@ -33,13 +34,14 @@ const SuggestedProfiles: React.FC = () => {
         updateScrollButtons();
     }, [suggestedProfilesData]);
 
-    if (!isLoadingSuggestedProfiles && (!suggestedProfilesData || suggestedProfilesData.length < 4)) {
+    const filteredProfiles = suggestedProfilesData?.filter(profile => !dismissedIds.has(profile.id)) || [];
+
+    if (!isLoadingSuggestedProfiles && filteredProfiles.length < 4) {
         return null;
     }
 
     const handleDismiss = (profileId: string) => {
-        // TODO: Implement dismiss functionality
-        void profileId;
+        setDismissedIds(prev => new Set([...prev, profileId]));
     };
 
     const handleFollow = (profile: Account) => {
@@ -114,7 +116,7 @@ const SuggestedProfiles: React.FC = () => {
                         }}
                         onScroll={updateScrollButtons}
                     >
-                        {(isLoadingSuggestedProfiles ? Array(10).fill(null) : (suggestedProfilesData || [])).map((profile, index) => (
+                        {(isLoadingSuggestedProfiles ? Array(10).fill(null) : filteredProfiles).map((profile, index) => (
                             <div
                                 key={profile?.id || `loading-${index}`}
                                 className='relative w-40 shrink-0 snap-start rounded-lg bg-gray-75 p-4 dark:bg-gray-925/30'

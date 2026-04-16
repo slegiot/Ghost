@@ -116,25 +116,156 @@ class ActionExecutor {
             columns: ['id', 'title', 'plaintext']
         });
 
-        // Return post summaries for the agent to analyse
-        const postSummaries = posts.data.map(p => ({
-            id: p.id,
-            title: p.get('title'),
-            excerpt: (p.get('plaintext') || '').substring(0, 300),
-            currentTags: p.related('tags').map(t => t.get('name'))
-        }));
+        const results = [];
+        const taxonomySuggester = require('../taxonomy-suggester');
+        const taxonomyService = taxonomySuggester.getService();
+
+        for (const post of posts.data) {
+            const currentTags = post.related('tags').map(t => t.get('name'));
+
+            // Use taxonomy suggester's extractTopics for in-memory suggestions
+            const content = post.get('plaintext') || '';
+            const title = post.get('title') || '';
+            const topics = taxonomyService.extractTopics(content, title);
+
+            // Take top topics as tag suggestions
+            const tagSuggestions = topics.slice(0, 5).map(t => t.topic);
+
+            if (tagSuggestions.length > 0) {
+                // Apply suggested tags
+                const existingTagNames = new Set(currentTags.map(t => t.toLowerCase()));
+                const newTags = tagSuggestions.filter(t => !existingTagNames.has(t.toLowerCase())).slice(0, 3);
+
+                if (newTags.length > 0) {
+                    // Get or create tags
+                    const tagModels = [];
+                    for (const tagName of newTags) {
+                        let tag = await models.Tag.findOne({name: tagName}, {...options, context: {internal: true}});
+                        if (!tag) {
+                            tag = await models.Tag.add({name: tagName}, {...options, context: {internal: true}});
+                        }
+                        tagModels.push(tag);
+                    }
+
+                    // Get current tag IDs and add new ones
+                    const currentTagIds = [...post.related('tags').map(t => t.id), ...tagModels.map(t => t.id)];
+
+                    await models.Post.edit({tags: currentTagIds}, {
+                        ...options,
+                        id: post.id,
+                        context: {internal: true}
+                    });
+
+                    results.push({
+                        post_id: post.id,
+                        title: post.get('title'),
+                        tags_applied: newTags
+                    });
+                }
+            }
+        }
 
         return {
-            postsAnalysed: postSummaries.length,
-            posts: postSummaries
+            posts_processed: results.length,
+            results
         };
     }
 
     async link_related(args, options) {
+        const maxLinks = args.max_links || 3;
+
+        // If a specific post is provided, find related content for it
+        if (args.post_id) {
+            const sourcePost = await models.Post.findOne({id: args.post_id}, {
+                ...options,
+                context: {internal: true},
+                formats: ['plaintext'],
+                columns: ['id', 'title', 'plaintext']
+            });
+
+            if (!sourcePost) {
+                throw new errors.NotFoundError({message: 'Post not found'});
+            }
+
+            const sourceContent = (sourcePost.get('plaintext') || '');
+            const sourceTitle = sourcePost.get('title') || '';
+
+            // Get all published posts for comparison
+            const candidates = await models.Post.findPage({
+                ...options,
+                filter: 'type:post+status:published+id:-' + args.post_id,
+                limit: 20,
+                order: 'published_at desc',
+                context: {internal: true},
+                columns: ['id', 'title', 'plaintext', 'slug', 'url']
+            });
+
+            // Simple keyword-based matching
+            const sourceWords = new Set(
+                (sourceTitle + ' ' + sourceContent)
+                    .toLowerCase()
+                    .split(/\W+/)
+                    .filter(w => w.length > 4)
+            );
+
+            const scored = [];
+            for (const candidate of candidates.data) {
+                if (candidate.id === args.post_id) continue;
+
+                const candContent = (candidate.get('plaintext') || '').toLowerCase();
+                const candTitle = (candidate.get('title') || '').toLowerCase();
+                let score = 0;
+
+                for (const word of sourceWords) {
+                    if (candTitle.includes(word) || candContent.includes(word)) {
+                        score++;
+                    }
+                }
+
+                if (score > 0) {
+                    scored.push({post: candidate, score});
+                }
+            }
+
+            scored.sort((a, b) => b.score - a.score);
+            const topRelated = scored.slice(0, maxLinks);
+
+            // Insert links into the source post
+            let html = sourcePost.get('html') || '';
+            const inserted = [];
+
+            for (const related of topRelated) {
+                const post = related.post;
+                const url = post.get('url');
+                const title = post.get('title');
+                html += `<p>Related: <a href="${url}">${title}</a></p>`;
+                inserted.push({
+                    target_post_id: post.id,
+                    target_title: title,
+                    url
+                });
+            }
+
+            if (inserted.length > 0) {
+                await models.Post.edit({html}, {
+                    ...options,
+                    id: args.post_id,
+                    context: {internal: true}
+                });
+            }
+
+            return {
+                source_post_id: args.post_id,
+                links_created: inserted.length,
+                related: inserted.map(i => ({id: i.target_post_id, title: i.target_title}))
+            };
+        }
+
+        // If no specific post, return recent content for manual linking
         const queryOptions = {
             ...options,
             filter: 'type:post+status:published',
-            limit: args.post_id ? 20 : 10,
+            limit: 10,
             order: 'published_at desc',
             context: {internal: true},
             columns: ['id', 'title', 'plaintext', 'slug', 'url']
@@ -166,7 +297,8 @@ class ActionExecutor {
         return {
             contentCount: allContent.length,
             content: allContent,
-            maxLinks: args.max_links || 3
+            maxLinks,
+            instruction: 'Provide a specific post_id to automatically insert links'
         };
     }
 
@@ -181,15 +313,245 @@ class ActionExecutor {
             throw new errors.NotFoundError({message: 'Post not found'});
         }
 
+        const content = model.get('plaintext') || '';
+        const title = model.get('title') || '';
+        const wordCount = content.split(/\s+/).length;
+        const focus = args.focus || 'all';
+
+        const suggestions = [];
+
+        // SEO analysis
+        if (focus === 'seo' || focus === 'all') {
+            if (!model.get('meta_title') && title.length > 60) {
+                suggestions.push({
+                    type: 'meta_title',
+                    issue: 'Meta title is missing or too long',
+                    suggestion: 'Add a concise meta title under 60 characters'
+                });
+            }
+            if (!model.get('meta_description')) {
+                suggestions.push({
+                    type: 'meta_description',
+                    issue: 'Meta description is missing',
+                    suggestion: 'Add a compelling meta description between 150-160 characters'
+                });
+            }
+            if (content.length < 300) {
+                suggestions.push({
+                    type: 'content',
+                    issue: 'Content is thin (<300 words)',
+                    suggestion: 'Consider adding more valuable content'
+                });
+            }
+        }
+
+        // Readability analysis
+        if (focus === 'readability' || focus === 'all') {
+            const sentences = content.split(/[.!?]+/);
+            const avgWordsPerSentence = wordCount / Math.max(sentences.length, 1);
+            if (avgWordsPerSentence > 25) {
+                suggestions.push({
+                    type: 'readability',
+                    issue: 'Sentences are quite long',
+                    suggestion: 'Break up long sentences for better readability'
+                });
+            }
+            // Check for passive voice patterns
+            if (/was\s+\w+ed|been\s+\w+ed/i.test(content)) {
+                suggestions.push({
+                    type: 'writing_style',
+                    issue: 'Possible passive voice detected',
+                    suggestion: 'Use active voice for more engaging content'
+                });
+            }
+        }
+
+        // Engagement analysis
+        if (focus === 'engagement' || focus === 'all') {
+            // Check for headings
+            if (!/^#|\<h[1-6]/.test(model.get('html'))) {
+                suggestions.push({
+                    type: 'structure',
+                    issue: 'No headings found',
+                    suggestion: 'Add headings to break up content and improve scannability'
+                });
+            }
+            // Check for images
+            if (!/\<img/.test(model.get('html'))) {
+                suggestions.push({
+                    type: 'media',
+                    issue: 'No images found',
+                    suggestion: 'Add relevant images to increase engagement'
+                });
+            }
+            // Check for links
+            if (!/\<a\s/.test(model.get('html'))) {
+                suggestions.push({
+                    type: 'links',
+                    issue: 'No internal links found',
+                    suggestion: 'Add internal links to related content'
+                });
+            }
+        }
+
         return {
             id: model.id,
-            title: model.get('title'),
+            title: title,
             content: model.get('html'),
-            plaintext: (model.get('plaintext') || '').substring(0, 2000),
-            focus: args.focus || 'all',
-            wordCount: (model.get('plaintext') || '').split(/\s+/).length,
+            plaintext: content.substring(0, 2000),
+            focus,
+            wordCount,
             metaTitle: model.get('meta_title'),
-            metaDescription: model.get('meta_description')
+            metaDescription: model.get('meta_description'),
+            suggestions
+        };
+    }
+
+    async update_post(args, options) {
+        const model = await models.Post.findOne({id: args.post_id}, {
+            ...options,
+            context: {internal: true},
+            formats: ['html']
+        });
+
+        if (!model) {
+            throw new errors.NotFoundError({message: 'Post not found'});
+        }
+
+        const updates = {};
+        if (args.title) {
+            updates.title = args.title;
+        }
+        if (args.content) {
+            updates.html = args.content;
+        }
+        if (args.meta_title !== undefined) {
+            updates.meta_title = args.meta_title;
+        }
+        if (args.meta_description !== undefined) {
+            updates.meta_description = args.meta_description;
+        }
+        if (args.status) {
+            updates.status = args.status;
+        }
+
+        const updated = await models.Post.edit(updates, {
+            ...options,
+            id: args.post_id,
+            context: {internal: true}
+        });
+
+        return {
+            id: updated.id,
+            title: updated.get('title'),
+            slug: updated.get('slug'),
+            status: updated.get('status'),
+            message: 'Post updated successfully'
+        };
+    }
+
+    async apply_tags(args, options) {
+        const post = await models.Post.findOne({id: args.post_id}, {
+            ...options,
+            context: {internal: true},
+            withRelated: ['tags']
+        });
+
+        if (!post) {
+            throw new errors.NotFoundError({message: 'Post not found'});
+        }
+
+        const existingTags = post.related('tags');
+        const existingTagNames = new Set(existingTags.map(t => t.get('name')));
+        const newTagNames = args.tags || [];
+        const tagsToAdd = [];
+
+        // Create or find new tags
+        for (const tagName of newTagNames) {
+            if (!existingTagNames.has(tagName)) {
+                let tag = await models.Tag.findOne({name: tagName}, {...options, context: {internal: true}});
+                if (!tag) {
+                    tag = await models.Tag.add({name: tagName}, {...options, context: {internal: true}});
+                }
+                tagsToAdd.push(tag);
+            }
+        }
+
+        // Get all current tag IDs and add new ones
+        const currentTagIds = [...existingTags.map(t => t.id), ...tagsToAdd.map(t => t.id)];
+
+        await models.Post.edit({tags: currentTagIds}, {
+            ...options,
+            id: args.post_id,
+            context: {internal: true}
+        });
+
+        return {
+            post_id: args.post_id,
+            tags_applied: newTagNames,
+            message: `Applied ${newTagNames.length} tag(s) to post`
+        };
+    }
+
+    async insert_links(args, options) {
+        const post = await models.Post.findOne({id: args.post_id}, {
+            ...options,
+            context: {internal: true},
+            formats: ['html']
+        });
+
+        if (!post) {
+            throw new errors.NotFoundError({message: 'Post not found'});
+        }
+
+        const targetIds = (args.links || []).map(l => l.target_post_id).filter(Boolean);
+        if (targetIds.length === 0) {
+            throw new errors.ValidationError({message: 'No valid target post IDs provided'});
+        }
+
+        // Fetch target posts to get their URLs
+        const targets = await models.Post.findPage({
+            ...options,
+            filter: `id:[${targetIds.join(',')}]`,
+            limit: targetIds.length,
+            context: {internal: true},
+            columns: ['id', 'title', 'slug', 'url']
+        });
+
+        const targetMap = {};
+        for (const t of targets.data) {
+            targetMap[t.id] = t;
+        }
+
+        // Build and insert links into HTML content
+        let html = post.get('html') || '';
+        const inserted = [];
+
+        for (const link of (args.links || [])) {
+            const target = targetMap[link.target_post_id];
+            if (target && link.anchor_text) {
+                const url = target.get('url');
+                const linkHtml = `<a href="${url}">${link.anchor_text}</a>`;
+                // Simple append to end of content - more sophisticated insertion could use DOM
+                html += `<p>Related: ${linkHtml}</p>`;
+                inserted.push({
+                    target_post_id: link.target_post_id,
+                    anchor_text: link.anchor_text,
+                    url
+                });
+            }
+        }
+
+        await models.Post.edit({html}, {
+            ...options,
+            id: args.post_id,
+            context: {internal: true}
+        });
+
+        return {
+            post_id: args.post_id,
+            links_inserted: inserted,
+            message: `Inserted ${inserted.length} link(s)`
         };
     }
 

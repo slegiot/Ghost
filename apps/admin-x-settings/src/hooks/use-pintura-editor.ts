@@ -213,7 +213,6 @@ export default function usePinturaEditor() {
                 });
 
                 editor.on('loaderror', () => {
-                    // TODO: log error message on Sentry
                     Sentry.captureMessage('Pintura editor failed to load');
                 });
 
