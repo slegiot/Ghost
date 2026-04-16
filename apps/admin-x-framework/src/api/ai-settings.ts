@@ -22,7 +22,9 @@ export const useEditAiSettings = createMutation<AiSettingsResponse, Array<{key: 
     path: () => '/ai-settings/',
     body: settings => ({settings}),
     updateQueries: {
-        dataType
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: (newData: AiSettingsResponse) => newData
     }
 });
 
