@@ -27,21 +27,22 @@ class AiAgentService {
         this.baseUrl = baseUrl || 'https://openrouter.ai/api/v1';
     }
 
-    async _ensureConfigured() {
+    async _getOpenRouterRuntimeConfig() {
         const config = await aiConfig.getConfig();
         if (!config.openrouter.apiKey) {
             throw new errors.ValidationError({
-                message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys.',
+                message: 'AI service not configured. Visit Settings > Advanced > AI Settings to add your API keys, or set AI_OPENROUTER_API_KEY in the server environment.',
                 context: 'OpenRouter API key is required for AI Agent.'
             });
         }
+        return config.openrouter;
     }
 
     /**
      * Process a chat message and return the agent's response with any pending actions
      */
     async chat({message, conversationHistory = []}) {
-        await this._ensureConfigured();
+        const openrouter = await this._getOpenRouterRuntimeConfig();
 
         const messages = [
             {role: 'system', content: SYSTEM_PROMPT},
@@ -53,16 +54,16 @@ class AiAgentService {
         ];
 
         try {
-            const response = await fetch(`${this.baseUrl}/chat/completions`, {
+            const response = await fetch(`${openrouter.baseUrl}/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.apiKey}`,
+                    Authorization: `Bearer ${openrouter.apiKey}`,
                     'HTTP-Referer': 'https://ghost.org',
                     'X-Title': 'Ghost CMS AI Agent'
                 },
                 body: JSON.stringify({
-                    model: this.model,
+                    model: openrouter.defaultModel,
                     messages,
                     tools,
                     tool_choice: 'auto',
