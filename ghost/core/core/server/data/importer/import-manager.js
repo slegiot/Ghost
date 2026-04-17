@@ -15,6 +15,7 @@ const ImporterContentFileHandler = require('./handlers/importer-content-file-han
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
+
 const ContentFileImporter = require('./importers/content-file-importer');
 const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
@@ -81,6 +82,8 @@ class ImportManager {
             storage: fileStorage
         });
 
+        const ThemeImporter = require('./importers/theme');
+
         const imageImporter = new ContentFileImporter({
             type: 'images',
             store: imageStorage
@@ -94,22 +97,27 @@ class ImportManager {
             type: 'files',
             store: fileStorage
         });
+        
+        const themeImporter = new ThemeImporter();
 
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [imageImporter, mediaImporter, contentFilesImporter, RevueImporter, DataImporter];
+        this.importers = [imageImporter, mediaImporter, contentFilesImporter, RevueImporter, DataImporter, themeImporter];
 
-        /**
-         * @type {Handler[]}
-         */
-        this.handlers = [ImageHandler, mediaHandler, filesHandler, RevueHandler, JSONHandler, MarkdownHandler];
+        const ReactAppHandler = require('./handlers/react-app-handler');
+        const CustomThemeHandler = require('./handlers/custom-theme-handler');
 
         // Keep track of file to cleanup at the end
         /**
          * @type {?string}
          */
         this.fileToDelete = null;
+        
+        /**
+         * @type {Handler[]}
+         */
+        this.handlers = [ImageHandler, mediaHandler, filesHandler, RevueHandler, JSONHandler, MarkdownHandler, ReactAppHandler, CustomThemeHandler];
     }
 
     /**

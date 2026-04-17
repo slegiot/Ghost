@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import UniversalImportModal from './universal-import-modal';
+import CustomAppImportModal from './custom-app-import-modal';
 import clsx from 'clsx';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -34,6 +35,10 @@ const MigrationToolsImport: React.FC = () => {
 
     const handleImportContent = () => {
         NiceModal.show(UniversalImportModal);
+    };
+
+    const handleCustomAppImport = () => {
+        NiceModal.show(CustomAppImportModal);
     };
 
     return (
@@ -72,6 +77,13 @@ const MigrationToolsImport: React.FC = () => {
                 }
                 title='Mailchimp'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/mailchimp'})}
+            />
+            <ImportButton
+                icon={
+                    <Icon className='w-auto' name='layers' size={18} />
+                }
+                title='Custom App Importer'
+                onClick={handleCustomAppImport}
             />
             <ImportButton
                 icon={
