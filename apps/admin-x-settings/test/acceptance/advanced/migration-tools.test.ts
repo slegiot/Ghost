@@ -15,6 +15,7 @@ test.describe('Migration tools', async () => {
         const migrators = [
             {name: 'Substack', route: '/migrate/substack'},
             {name: 'WordPress', route: '/migrate/wordpress'},
+            {name: 'Squarespace', route: '/migrate/squarespace'},
             {name: 'Medium', route: '/migrate/medium'},
             {name: 'Mailchimp', route: '/migrate/mailchimp'}
         ];
@@ -23,6 +24,21 @@ test.describe('Migration tools', async () => {
             await migrationSection.getByRole('button', {name}).click();
             await expectExternalNavigate(page, {route});
         }
+    });
+
+    test('Custom app importer opens modal', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests
+        }});
+
+        await page.goto('/');
+
+        const migrationSection = page.getByTestId('migrationtools');
+        await expect(migrationSection).toBeVisible();
+
+        await migrationSection.getByRole('button', {name: 'Custom App Importer'}).click();
+
+        await expect(page.getByTestId('custom-import-modal')).toBeVisible();
     });
 
     // test('Universal import', async ({page}) => {

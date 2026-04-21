@@ -80,7 +80,7 @@ const MigrationToolsImport: React.FC = () => {
             />
             <ImportButton
                 icon={
-                    <Icon className='w-auto' name='layers' size={18} />
+                    <Icon className='w-auto' name='layer' size={18} />
                 }
                 title='Custom App Importer'
                 onClick={handleCustomAppImport}

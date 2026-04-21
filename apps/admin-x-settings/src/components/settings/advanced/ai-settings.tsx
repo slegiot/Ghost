@@ -12,6 +12,7 @@ import {
     useEditAiSettings,
     useTestAiProvider
 } from '@tryghost/admin-x-framework/api/ai-settings';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 
 const FIELD_KEYS = {
     openrouterKey: 'ai_openrouter_api_key',
@@ -35,9 +36,24 @@ const FEATURE_KEYS = [
 ];
 
 const AiSettings: React.FC<{keywords: string[]}> = ({keywords}) => {
-    const {data} = useBrowseAiSettings();
+    const {data, error} = useBrowseAiSettings({
+        defaultErrorHandler: false,
+        retry: false
+    });
     const {mutateAsync: saveSettings, isLoading: isSaving} = useEditAiSettings();
     const {mutateAsync: testProvider, isLoading: isTesting} = useTestAiProvider();
+
+    const errorStatus = error instanceof APIError ? error.response?.status : undefined;
+
+    // Treat the AI admin endpoint as optional so older or mismatched backends
+    // don't show an unrelated global toast elsewhere in Settings.
+    if (errorStatus === 404 || errorStatus === 405 || errorStatus === 501) {
+        return null;
+    }
+
+    if (error) {
+        throw error;
+    }
 
     const settingByKey = useMemo(() => {
         const settings = data?.settings || [];
